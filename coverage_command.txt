@@ -1,0 +1,1 @@
+python -m pytest --cov-config=.coveragerc --cov=fimpy tests/ --cov-report html:coverage_html

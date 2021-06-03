@@ -1,0 +1,86 @@
+# This workflow will install Python dependencies, run tests and lint with a variety of Python versions
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+
+name: CI Tests (CPU)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test_lib_ubuntu:
+
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [3.7]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        pip install -r requirements_cpu.txt -r requirements_tests.txt
+        cythonize -i fimpy/fim_cutils/fim_cutils.pyx
+        python tests/generate_test_data.py
+    # Linting disabled
+    #- name: Lint with flake8
+    #  run: |
+    #    # stop the build if there are Python syntax errors or undefined names
+    #    flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+    #    # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+    #    flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+    - name: Test with pytest
+      run: |
+        python -m pytest --cov-config=.coveragerc_cpu --cov=fimpy tests/
+        bash <(curl -s https://codecov.io/bash) -t 9ad55939-f54d-4aad-a7eb-fcd2d22d4ecd
+
+    - name: Test installation
+      run: |
+        python setup.py build
+        python setup.py install
+        cd tests
+        python -m pytest .
+
+  test_lib_windows:
+
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [3.7]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        pip install -r requirements_cpu.txt -r requirements_tests.txt
+        cythonize -i fimpy/fim_cutils/fim_cutils.pyx
+        python tests/generate_test_data.py
+    # Linting disabled
+    #- name: Lint with flake8
+    #  run: |
+    #    # stop the build if there are Python syntax errors or undefined names
+    #    flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+    #    # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+    #    flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+    - name: Test with pytest
+      run: |
+        python -m pytest --cov-config=.coveragerc_cpu --cov=fimpy tests/
+
+    - name: Test installation
+      run: |
+        python setup.py build
+        python setup.py install
+        cd tests
+        python -m pytest .

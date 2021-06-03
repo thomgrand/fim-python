@@ -1,0 +1,59 @@
+from setuptools import setup
+from Cython.Build import cythonize
+from distutils.core import setup, Extension
+import sys
+import os
+
+if sys.platform.startswith("win32"):
+     extra_compile_args = ["/O2", "/openmp"]
+     extra_link_args = [] #["/openmp"]
+else:
+     extra_compile_args = ["-O3", "-fopenmp"]
+     extra_link_args = ["-fopenmp"]
+
+fim_cutils_extension = Extension(
+                              name="fimpy.fim_cutils.fim_cutils",
+                              sources=["fimpy/fim_cutils/fim_cutils.pyx"],                 # our Cython source
+                              #sources=["Rectangle.cpp"],  # additional source file(s)
+                              language="c++",             # generate C++ code
+                              extra_compile_args=extra_compile_args,
+                              extra_link_args=extra_link_args,
+                              compiler_directives={'language_level' : "3"}
+                         )
+
+lib_requires_cpu = ["numpy>=1.19", "numba>=0.5", "cython"]
+
+lib_requires_gpu = ["cupy>=9.0"]
+test_requires_cpu = lib_requires_cpu + ["scipy", "pytest", "matplotlib", "pandas"]    
+test_requires_gpu = lib_requires_gpu + ["scipy", "pytest", "matplotlib", "pandas"]    
+
+with open(os.path.join(os.path.dirname(__file__), 'README.md'), 'r') as readme:
+     long_description = readme.read()
+
+setup(name="fimpy",
+    version="0.1.0",    
+    description="This repository implements the Fast Iterative Method on tetrahedral domains and triangulated surfaces purely in python both for CPU (numpy) and GPU (cupy).",
+    long_description=long_description,
+    url="https://github.com/thomgrand/fim-python",
+    packages=["fimpy", "fimpy.utils", "fimpy.fim_cutils"],
+    install_requires=lib_requires_cpu,
+    classifiers=[
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Cython",
+        "Topic :: Scientific/Engineering :: Mathematics",
+        "Operating System :: POSIX :: Linux",
+        "Operating System :: Microsoft :: Windows",
+        "Environment :: GPU :: NVIDIA CUDA",
+        "License :: OSI Approved :: GNU Affero General Public License v3",
+    ],
+    python_requires='>=3.6',
+     author="Thomas Grandits",
+     author_email="tomdev@gmx.net",
+     license="AGPL",     
+     ext_modules = cythonize(fim_cutils_extension),
+     extras_require = {
+          'gpu': lib_requires_gpu,
+          'tests': test_requires_cpu
+     }
+     )
+
