@@ -20,7 +20,7 @@ fim_cutils_extension = Extension(
                               compiler_directives={'language_level' : "3"}
                          )
 
-lib_requires_cpu = ["numpy>=1.19", "numba>=0.5", "cython"]
+lib_requires_cpu = ["numpy>=1.19", "numba>=0.5", "Cython>=0.29.22"]
 
 lib_requires_gpu = ["cupy>=9.0"]
 test_requires_cpu = lib_requires_cpu + ["scipy", "pytest", "matplotlib", "pandas"]    
