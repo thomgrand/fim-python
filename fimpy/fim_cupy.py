@@ -274,27 +274,6 @@ class FIMCupyAL(FIMBase):
     self.points_unique_map = cp.zeros(shape=[self.nr_points], dtype=cp.int32)
     self.points_ones = cp.ones(shape=[self.nr_points], dtype=cp.int32)
 
-  #TODO: Still unused
-  def build_linear_nh_elem_map(self):
-    """
-    import multiprocessing
-    from multiprocessing.pool import ThreadPool
-    cpus = multiprocessing.cpu_count()
-    #pool = multiprocessing.Pool(processes=cpus)
-    pool = ThreadPool(processes=cpus)
-    pool.map(lambda single_map: np.unique(single_map), self.nh_map)
-    """
-
-    self.nh_map_list = [np.unique(single_map) for single_map in self.nh_map]
-    self.nh_map_sizes = cp.array([nh_list.size for nh_list in self.nh_map_list], dtype=cp.int32)
-    self.nh_map_offsets = cp.concatenate([cp.array([0]), cp.cumsum(self.nh_map_sizes)[:-1]]).astype(cp.int32)
-    self.nh_map_arr = cp.array(np.concatenate(self.nh_map_list), dtype=cp.int32)
-
-    self.point_elem_map_list = [np.unique(single_map) for single_map in self.point_elem_map]
-    self.point_elem_map_sizes = cp.array([map_list.size for map_list in self.point_elem_map_list], dtype=cp.int32)
-    self.point_elem_map_offsets = cp.concatenate([cp.array([0]), cp.cumsum(self.point_elem_map_sizes)[:-1]]).astype(cp.int32)
-    self.point_elem_map_arr = cp.array(np.concatenate(self.point_elem_map_list), dtype=cp.int32)
-
   def comp_unique_map(self, inds, elem_map=True):
     """Efficient implementation to compute an unique list of indices of active elements/points
 

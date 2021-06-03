@@ -10,56 +10,6 @@ from .utils.tsitsiklis import norm_map
 #import pyximport; pyximport.install()
 from .fim_cutils import compute_point_elem_map_c, compute_neighborhood_map_c
 
-#TODO: Unused
-@njit(parallel=True, cache=True, nogil=True)
-def compute_point_elem_map_njit(elems, point_elem_map):
-    #"""
-    nr_elems = elems.shape[0]
-    nr_points = point_elem_map.shape[0]
-    current_offsets = np.zeros_like(point_elem_map[..., 0])
-    for elem_i in range(nr_elems):
-        for elem_j in prange(elems.shape[1]):
-            point = elems[elem_i, elem_j]
-            point_elem_map[point, current_offsets[point]] = elem_i
-            current_offsets[point] += 1
-
-    point_elem_map = point_elem_map[:, :np.max(current_offsets)]
-    for point_i in prange(nr_points):
-        point_elem_map[point_i, current_offsets[point_i]:] = point_elem_map[point_i, current_offsets[point_i]-1]
-    #"""
-    """
-    nr_points = point_elem_map.shape[0]
-    for point_i in prange(nr_points):
-        contained_elems = np.where(elems == point_i)[0]
-        point_elem_map[point_i, :contained_elems.size] = contained_elems
-        point_elem_map[point_i, contained_elems.size:] = contained_elems[-1]
-    """
-    return point_elem_map
-
-@njit(parallel=True, cache=True, nogil=True)
-def compute_neighborhood_map_njit(elems, nh_map):
-    nh_map[:] = -1
-    nr_points = nh_map.shape[0]
-    nr_elems = elems.shape[0]
-    current_offsets = np.zeros_like(nh_map[..., 0])
-    elem_range = np.arange(elems.shape[1])
-    for elem_i in range(nr_elems):
-        points = elems[elem_i]
-        for elem_j in prange(elems.shape[1]):
-            point = points[elem_j]
-            inds = np.delete(elem_range, elem_j)
-            offset = current_offsets[point]
-            nh_map[point, offset:(offset+inds.size)] = elems[elem_i][inds]
-            current_offsets[point] += inds.size
-
-    for point_i in prange(nr_points):
-        unique_neighs = np.unique(nh_map[point_i])
-        unique_neighs = unique_neighs[unique_neighs != -1]
-        nh_map[point_i, :unique_neighs.size] = unique_neighs
-        nh_map[point_i, unique_neighs.size:] = unique_neighs[-1]
-
-    return nh_map
-
 class FIMBase():
     """This abstract base class combines common functionality of Cupy and Numpy solvers
 
