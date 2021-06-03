@@ -1,5 +1,4 @@
 from setuptools import setup
-from Cython.Build import cythonize
 from distutils.core import setup, Extension
 import sys
 import os
@@ -30,10 +29,11 @@ test_requires_gpu = lib_requires_gpu + ["scipy", "pytest", "matplotlib", "pandas
 with open(os.path.join(os.path.dirname(__file__), 'README.md'), 'r') as readme:
      long_description = readme.read()
 
-setup(name="fimpy",
-    version="0.1.0",    
+setup(name="fim-python",
+    version="1.0.0",    
     description="This repository implements the Fast Iterative Method on tetrahedral domains and triangulated surfaces purely in python both for CPU (numpy) and GPU (cupy).",
     long_description=long_description,
+    long_description_content_type="text/markdown",
     url="https://github.com/thomgrand/fim-python",
     packages=["fimpy", "fimpy.utils", "fimpy.fim_cutils"],
     install_requires=lib_requires_cpu,
@@ -50,10 +50,11 @@ setup(name="fimpy",
      author="Thomas Grandits",
      author_email="tomdev@gmx.net",
      license="AGPL",     
-     ext_modules = cythonize(fim_cutils_extension),
+     ext_modules = [fim_cutils_extension],
      extras_require = {
           'gpu': lib_requires_gpu,
-          'tests': test_requires_cpu
+          'tests': test_requires_cpu,
+          'docs': ["sphinx", "pydata_sphinx_theme"]
      }
      )
 

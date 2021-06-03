@@ -16,7 +16,7 @@ for given boundary conditions
 
 For a given anisotropic velocity, this can calculate the geodesic distance between a set of ![$\mathbf{x}_0$](https://latex.codecogs.com/svg.latex?\Large\mathbf{x}_0) and all points on the domain like shown in the figure.
 
-![Preview](docs/figs/usage_example.jpg)
+![Preview Image](docs/figs/usage_example.jpg)
 
 Note that when using multiple ![$\mathbf{x}_0$](https://latex.codecogs.com/svg.latex?\Large\mathbf{x}_0), they are not guaranteed to be in the final solution if they are not a valid viscosity solution. A recommended read for more details on the subject is:  
 Evans, Lawrence C. "Partial differential equations." *Graduate studies in mathematics* 19.2 (1998).
@@ -25,13 +25,13 @@ Evans, Lawrence C. "Partial differential equations." *Graduate studies in mathem
 
 The easiest way to install the library is using pip
 ```bash
-pip install fimpy[cupy] #GPU version
+pip install fim-python[gpu] #GPU version
 ```
 
 If you don't have a compatible CUDA GPU, you can install the CPU only version to test the library, but the performance won't be comparable to the GPU version (see [Benchmark](#Benchmark)).
 
 ```bash
-pip install fimpy #CPU version
+pip install fim-python #CPU version
 ```
 
 # Usage
@@ -54,6 +54,9 @@ fim_cp_al = FIMCupy(points, triangs, D, precision=np.float32) #GPU w. active lis
 result_cp_al = fim_cp.comp_fim(x0, x0_vals)
 ```
 
+# Documentation
+
+[https://fim-python.readthedocs.io/en/latest](https://fim-python.readthedocs.io/en/latest)
 
 # Benchmark
 
@@ -71,7 +74,3 @@ The library works for an arbitrary number of dimensions (manifolds in N-D), but 
 
 This library is licensed under the [GNU Affero General Public License](LICENSE). 
 If you need the library issued under another license for commercial use, you can contact me via e-mail [tomdev (at) gmx.net](mailto:tomdev@gmx.net).
-
-# TODOs
-- Finish documentation
-- More explanation on the benchmark?

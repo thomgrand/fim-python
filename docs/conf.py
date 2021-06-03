@@ -12,7 +12,8 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('../'))
+#sys.path.insert(0, os.path.abspath('../')) #Only for local usage. Incompatible with readthedocs
+import fimpy
 
 
 # -- Project information -----------------------------------------------------
@@ -22,7 +23,7 @@ copyright = '2021, Thomas Grandits'
 author = 'Thomas Grandits'
 
 # The full version, including alpha/beta/rc tags
-release = '0.1'
+release = fimpy.__version__
 
 
 # -- General configuration ---------------------------------------------------

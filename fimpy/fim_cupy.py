@@ -2,114 +2,122 @@
 """
 
 import numpy as np
-import cupy as cp
-import cupyx as cpx
+
+#Workaround for readthedocs
+try:
+  import cupy as cp
+  import cupyx as cpx
+  from .utils.comp import metric_norm_matrix_2D_cupy, metric_norm_matrix_3D_cupy, metric_norm_matrix, metric_sqr_norm_matrix_2D_cupy, metric_sqr_norm_matrix_3D_cupy, metric_sqr_norm_matrix
+  cupy_enabled = True
+except ImportError as err:
+  cupy_enabled = False
+
 from .fim_base import FIMBase
-from .utils.comp import metric_norm_matrix_2D_cupy, metric_norm_matrix_3D_cupy, metric_norm_matrix, metric_sqr_norm_matrix_2D_cupy, metric_sqr_norm_matrix_3D_cupy, metric_sqr_norm_matrix
 from .cupy_kernels import compute_perm_kernel_str, compute_perm_kernel_shared
 
-@cp.fuse()
-def u3_comp_cupy_2D(x1, x2, x3, u1, u2, D):
-  """Custom cupy implementation of :meth:`fimpy.fim_base.FIMBase.tsitsiklis_update_triang` to speed up computations for :math:`d = 2`.
-  """
-  k = u1 - u2
-  z2 = x2 - x3
-  z1 = x1 - x2
-  p11 = metric_sqr_norm_matrix_2D_cupy(D, z1, z1)
-  p12 = metric_sqr_norm_matrix_2D_cupy(D, z1, z2)
-  p22 = metric_sqr_norm_matrix_2D_cupy(D, z2, z2)
-  denominator = p11 - k**2
-  sqrt_val = (p11 * p22 - p12**2) / denominator
-  sqrt_invalid_mask = sqrt_val < 0.
-  sqrt_op = cp.sqrt(sqrt_val)
-  rhs = k * sqrt_op
-  alpha1 = -(p12 + rhs) / p11
-  alpha2 = -(p12 - rhs) / p11
-  alpha1 = cp.minimum(cp.maximum(alpha1, 0.), 1.)
-  alpha2 = cp.minimum(cp.maximum(alpha2, 0.), 1.)
+if cupy_enabled:
+  @cp.fuse()
+  def u3_comp_cupy_2D(x1, x2, x3, u1, u2, D):
+    """Custom cupy implementation of :meth:`fimpy.fim_base.FIMBase.tsitsiklis_update_triang` to speed up computations for :math:`d = 2`.
+    """
+    k = u1 - u2
+    z2 = x2 - x3
+    z1 = x1 - x2
+    p11 = metric_sqr_norm_matrix_2D_cupy(D, z1, z1)
+    p12 = metric_sqr_norm_matrix_2D_cupy(D, z1, z2)
+    p22 = metric_sqr_norm_matrix_2D_cupy(D, z2, z2)
+    denominator = p11 - k**2
+    sqrt_val = (p11 * p22 - p12**2) / denominator
+    sqrt_invalid_mask = sqrt_val < 0.
+    sqrt_op = cp.sqrt(sqrt_val)
+    rhs = k * sqrt_op
+    alpha1 = -(p12 + rhs) / p11
+    alpha2 = -(p12 - rhs) / p11
+    alpha1 = cp.minimum(cp.maximum(alpha1, 0.), 1.)
+    alpha2 = cp.minimum(cp.maximum(alpha2, 0.), 1.)
 
-  u3 = []
-  for alpha in [alpha1, alpha2]:
-    x = x3 - (alpha[..., cp.newaxis] * x1 + (1 - alpha[..., cp.newaxis]) * x2)
-    u3.append(alpha * u1 + (1 - alpha) * u2
-              + metric_norm_matrix_2D_cupy(D, x, x))
+    u3 = []
+    for alpha in [alpha1, alpha2]:
+      x = x3 - (alpha[..., cp.newaxis] * x1 + (1 - alpha[..., cp.newaxis]) * x2)
+      u3.append(alpha * u1 + (1 - alpha) * u2
+                + metric_norm_matrix_2D_cupy(D, x, x))
 
-  return cp.minimum(*u3), sqrt_invalid_mask
+    return cp.minimum(*u3), sqrt_invalid_mask
 
-#@cp.fuse()
-def u3_comp_cupy_3D(x1, x2, x3, u1, u2, D):
-  """Custom cupy implementation of :meth:`fimpy.fim_base.FIMBase.tsitsiklis_update_triang` to speed up computations for :math:`d = 3`.
-  """
-  k = u1 - u2
-  z2 = x2 - x3
-  z1 = x1 - x2
-  p11 = metric_sqr_norm_matrix_3D_cupy(D, z1, z1)
-  p12 = metric_sqr_norm_matrix_3D_cupy(D, z1, z2)
-  p22 = metric_sqr_norm_matrix_3D_cupy(D, z2, z2)
-  denominator = p11 - k**2
-  sqrt_val = (p11 * p22 - p12**2) / denominator
-  sqrt_invalid_mask = sqrt_val < 0.
-  sqrt_op = cp.sqrt(sqrt_val)
-  rhs = k * sqrt_op
-  alpha1 = -(p12 + rhs) / p11
-  alpha2 = -(p12 - rhs) / p11
-  alpha1 = cp.minimum(cp.maximum(alpha1, 0.), 1.)
-  alpha2 = cp.minimum(cp.maximum(alpha2, 0.), 1.)
+  #@cp.fuse()
+  def u3_comp_cupy_3D(x1, x2, x3, u1, u2, D):
+    """Custom cupy implementation of :meth:`fimpy.fim_base.FIMBase.tsitsiklis_update_triang` to speed up computations for :math:`d = 3`.
+    """
+    k = u1 - u2
+    z2 = x2 - x3
+    z1 = x1 - x2
+    p11 = metric_sqr_norm_matrix_3D_cupy(D, z1, z1)
+    p12 = metric_sqr_norm_matrix_3D_cupy(D, z1, z2)
+    p22 = metric_sqr_norm_matrix_3D_cupy(D, z2, z2)
+    denominator = p11 - k**2
+    sqrt_val = (p11 * p22 - p12**2) / denominator
+    sqrt_invalid_mask = sqrt_val < 0.
+    sqrt_op = cp.sqrt(sqrt_val)
+    rhs = k * sqrt_op
+    alpha1 = -(p12 + rhs) / p11
+    alpha2 = -(p12 - rhs) / p11
+    alpha1 = cp.minimum(cp.maximum(alpha1, 0.), 1.)
+    alpha2 = cp.minimum(cp.maximum(alpha2, 0.), 1.)
 
-  u3 = []
-  for alpha in [alpha1, alpha2]:
-    x = x3 - (alpha[..., cp.newaxis] * x1 + (1 - alpha[..., cp.newaxis]) * x2)
-    u3.append(alpha * u1 + (1 - alpha) * u2
-              + metric_norm_matrix_3D_cupy(D, x, x))
+    u3 = []
+    for alpha in [alpha1, alpha2]:
+      x = x3 - (alpha[..., cp.newaxis] * x1 + (1 - alpha[..., cp.newaxis]) * x2)
+      u3.append(alpha * u1 + (1 - alpha) * u2
+                + metric_norm_matrix_3D_cupy(D, x, x))
 
-  return cp.minimum(*u3), sqrt_invalid_mask
+    return cp.minimum(*u3), sqrt_invalid_mask
 
 
-#@cp.fuse() #TODO: formal parameter space overflow 
-def u3_comp_cupy_ND(x1, x2, x3, u1, u2, D):
-  """Custom cupy implementation of :meth:`fimpy.fim_base.FIMBase.tsitsiklis_update_triang` to speed up computations for :math:`d \notin \{2, 3\}`.
-  """
-  #p11, p12, sqrt_invalid_mask, rhs = u3_comp_cupy_ND_part1(x1, x2, x3, u1, u2, D)
-  #return u3_comp_cupy_ND_part2(p11, p12, rhs, x1, x2, x3, u1, u2, D), sqrt_invalid_mask
-  k = u1 - u2
-  z2 = x2 - x3
-  z1 = x1 - x2
-  p11 = metric_sqr_norm_matrix(D, z1, z1, cp)
-  p12 = metric_sqr_norm_matrix(D, z1, z2, cp)
-  p22 = metric_sqr_norm_matrix(D, z2, z2, cp)
-  denominator = p11 - k**2
-  sqrt_val = (p11 * p22 - p12**2) / denominator
-  sqrt_invalid_mask = sqrt_val < 0.
-  sqrt_op = cp.sqrt(sqrt_val)
-  rhs = k * sqrt_op
-  alpha1 = -(p12 + rhs) / p11
-  alpha2 = -(p12 - rhs) / p11
-  alpha1 = cp.minimum(cp.maximum(alpha1, 0.), 1.)
-  alpha2 = cp.minimum(cp.maximum(alpha2, 0.), 1.)
+  #@cp.fuse() #TODO: formal parameter space overflow 
+  def u3_comp_cupy_ND(x1, x2, x3, u1, u2, D):
+    """Custom cupy implementation of :meth:`fimpy.fim_base.FIMBase.tsitsiklis_update_triang` to speed up computations for :math:`d \notin \{2, 3\}`.
+    """
+    #p11, p12, sqrt_invalid_mask, rhs = u3_comp_cupy_ND_part1(x1, x2, x3, u1, u2, D)
+    #return u3_comp_cupy_ND_part2(p11, p12, rhs, x1, x2, x3, u1, u2, D), sqrt_invalid_mask
+    k = u1 - u2
+    z2 = x2 - x3
+    z1 = x1 - x2
+    p11 = metric_sqr_norm_matrix(D, z1, z1, cp)
+    p12 = metric_sqr_norm_matrix(D, z1, z2, cp)
+    p22 = metric_sqr_norm_matrix(D, z2, z2, cp)
+    denominator = p11 - k**2
+    sqrt_val = (p11 * p22 - p12**2) / denominator
+    sqrt_invalid_mask = sqrt_val < 0.
+    sqrt_op = cp.sqrt(sqrt_val)
+    rhs = k * sqrt_op
+    alpha1 = -(p12 + rhs) / p11
+    alpha2 = -(p12 - rhs) / p11
+    alpha1 = cp.minimum(cp.maximum(alpha1, 0.), 1.)
+    alpha2 = cp.minimum(cp.maximum(alpha2, 0.), 1.)
 
-  u3 = []
-  for alpha in [alpha1, alpha2]:
-    x = x3 - (alpha[..., cp.newaxis] * x1 + (1 - alpha[..., cp.newaxis]) * x2)
-    u3.append(alpha * u1 + (1 - alpha) * u2
-              + metric_norm_matrix(D, x, x, cp))
+    u3 = []
+    for alpha in [alpha1, alpha2]:
+      x = x3 - (alpha[..., cp.newaxis] * x1 + (1 - alpha[..., cp.newaxis]) * x2)
+      u3.append(alpha * u1 + (1 - alpha) * u2
+                + metric_norm_matrix(D, x, x, cp))
 
-  return cp.minimum(*u3), sqrt_invalid_mask
+    return cp.minimum(*u3), sqrt_invalid_mask
 
-@cp.fuse()
-def tsitsiklis_update_tetra_quadr_cupy_3D(D, k, z1, z2):
-  """Custom cupy implementation of :meth:`fimpy.fim_base.FIMBase.tsitsiklis_update_tetra_quadr` to speed up computations for :math:`d = 3`.
-  """
-  norm_sqr_f = metric_sqr_norm_matrix_3D_cupy
-  p11 = norm_sqr_f(D, z1, z1)
-  p12 = norm_sqr_f(D, z1, z2)
-  p22 = norm_sqr_f(D, z2, z2)
-  denominator = p11 - k*k
-  sqrt_val = (p11 * p22 - (p12 * p12)) / denominator
-  rhs = k * cp.sqrt(sqrt_val)
-  alpha1 = -(p12 + rhs) / p11
-  #alpha2 = -(p12 - rhs) / p11
+  @cp.fuse()
+  def tsitsiklis_update_tetra_quadr_cupy_3D(D, k, z1, z2):
+    """Custom cupy implementation of :meth:`fimpy.fim_base.FIMBase.tsitsiklis_update_tetra_quadr` to speed up computations for :math:`d = 3`.
+    """
+    norm_sqr_f = metric_sqr_norm_matrix_3D_cupy
+    p11 = norm_sqr_f(D, z1, z1)
+    p12 = norm_sqr_f(D, z1, z2)
+    p22 = norm_sqr_f(D, z2, z2)
+    denominator = p11 - k*k
+    sqrt_val = (p11 * p22 - (p12 * p12)) / denominator
+    rhs = k * cp.sqrt(sqrt_val)
+    alpha1 = -(p12 + rhs) / p11
+    #alpha2 = -(p12 - rhs) / p11
 
-  return alpha1 #, alpha2
+    return alpha1 #, alpha2
 
 class FIMCupy(FIMBase):
   """This class implements the Fast Iterative Method on the GPU using cupy.
