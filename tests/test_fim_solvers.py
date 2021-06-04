@@ -152,12 +152,3 @@ class TestFIMSolversComputations():
     @pytest.mark.parametrize('use_active_list', [True, False])
     def test_comp_gpu(self, dims, elem_dims, precision, use_active_list):
         self.test_comp(dims, elem_dims, precision, use_active_list=use_active_list, device='gpu')
-
-    #def test_init
-    #def test_1D_network
-    #def test_multidim_network
-    #def test_manifold
-    #def test_volumetric_model
-
-#if __name__ == "__main__":
-    #unittest.main()

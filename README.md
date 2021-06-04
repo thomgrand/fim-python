@@ -1,7 +1,7 @@
 # Fast Iterative Method - Numpy/Cupy
 This repository implements the Fast Iterative Method on [tetrahedral domains](https://epubs.siam.org/doi/abs/10.1137/120881956) and [triangulated surfaces](https://epubs.siam.org/doi/abs/10.1137/100788951) purely in python both for CPU (numpy) and GPU (cupy). The main focus is however on the GPU implementation, since it can be better exploited for very large domains.
 
-[![codecov](https://codecov.io/gh/thomgrand/fim-python/branch/main/graph/badge.svg?token=DG05WR5030)](https://codecov.io/gh/thomgrand/fim-python)
+[![codecov](https://codecov.io/gh/thomgrand/fim-python/branch/master/graph/badge.svg?token=DG05WR5030)](https://codecov.io/gh/thomgrand/fim-python)
 [![CI Tests](https://github.com/thomgrand/fim-python/actions/workflows/python-package.yml/badge.svg)](https://github.com/thomgrand/fim-python/actions/workflows/python-package.yml)
 
 # Details
