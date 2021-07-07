@@ -175,8 +175,8 @@ class FIMNPAL(FIMBase):
       u_neighs = self.comp_marked_points(u_new, D, converged_neighbors)
       neighbors_needing_updates = converged_neighbors[((np.abs(u_new[converged_neighbors] - u_neighs[converged_neighbors]) >= self.convergence_eps))]
       #Check if the neighbors converged
-      self.active_list[neighbors_needing_updates] = True #Add neighbors to the active list
       self.active_list[converged_inds] = False #Remove converged points from the active list
+      self.active_list[neighbors_needing_updates] = True #Add neighbors to the active list
 
 
       if np.all(~self.active_list): #np.allclose(u_new, self.phi_sol, atol=self.convergence_eps):

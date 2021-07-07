@@ -3,7 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-FIM-Python (fimpy) documentation!
+FIM-Python documentation
 ======================================
 
 .. contents:: Quick Start
@@ -29,8 +29,7 @@ The anisotropic eikonal equation that is solved, is given by the partial differe
    \right. .
 
 The library computes :math:`\phi` for a given :math:`D`, :math:`\mathbf{x}_0` and :math:`g`.
-
-   
+In practice, this problem is often associated to computing the earliest arrival times :math:`\phi` from a set of given starting points :math:`\mathbf{x}_0` through a heterogeneous medium (i.e. different velocities are assigned throughout the medium).   
 
 Usage
 ---------------------
@@ -70,6 +69,7 @@ You should see the following figure with the computed :math:`\phi` for the given
 
    interface.rst
    detailed_description.rst
+   benchmark.rst
 
 
 Module API

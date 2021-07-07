@@ -210,10 +210,7 @@ class FIMCupy(FIMBase):
     if D.dtype != self.precision:
       D = D.astype(self.precision)
 
-    self.total_points_calculated = 0 #TODO: Just for testing the performance for PIEMAP
-
     for i in range(max_iterations):
-      self.total_points_calculated += self.elems_perm[..., -1].size
       u_new = self.update_all_points(self.elems_perm, self.points_perm, D, self.phi_sol,
                                         lib=cp)
 
@@ -301,13 +298,16 @@ class FIMCupyAL(FIMBase):
       cpx.scatter_add(self.elem_unique_map, inds, self.elem_ones[inds])
       #self.elem_unique_map[inds] = 1
       unique_inds = self.elem_unique_map.nonzero()[0]
+      #unique_mask = self.elem_unique_map != 0
       self.elem_unique_map[:] = 0 #Reset for next run
     else:
       cpx.scatter_add(self.points_unique_map, inds, self.points_ones[inds])
       #self.points_unique_map[inds] = 1
       unique_inds = self.points_unique_map.nonzero()[0]
+      #unique_mask = self.points_unique_map != 0
       self.points_unique_map[:] = 0 #Reset for next run
 
+    #return unique_mask
     return unique_inds
 
   def __del__(self):
@@ -459,7 +459,6 @@ class FIMCupyAL(FIMBase):
       #active_points_perm = self.points_perm[active_elem_inds][perm_inds]
       #active_D = np.tile(D[active_elem_inds, np.newaxis], [1, active_elems_perm.shape[1], 1, 1])[perm_inds]
 
-    self.total_points_calculated += self.active_elems_perm[..., -1].size
     u_new = self.update_specific_points(self.active_elems_perm,  # self.elems_perm,
                                     self.active_points_perm, #self.points_perm,
                                     self.active_D,
@@ -487,7 +486,6 @@ class FIMCupyAL(FIMBase):
     self.active_list[cp.unique(self.nh_map[x0])] = True
     update_al_interval = 1
     active_inds = self.active_list.nonzero()[0]
-    self.total_points_calculated = 0 #TODO: Just for testing the performance for PIEMAP
     for i in range(max_iterations):
       #active_points = self.points[self.active_list]
       
@@ -502,8 +500,8 @@ class FIMCupyAL(FIMBase):
           u_neighs = self.comp_marked_points(u_new, D, converged_neighbors)
           neighbors_needing_updates = converged_neighbors[((cp.abs(u_new[converged_neighbors] - u_neighs[converged_neighbors]) >= self.convergence_eps))]
           #Check if the neighbors converged
-          self.active_list[neighbors_needing_updates] = True #Add neighbors to the active list
           self.active_list[converged_inds] = False #Remove converged points from the active list
+          self.active_list[neighbors_needing_updates] = True #Add neighbors to the active list
           active_inds = self.active_list.nonzero()[0]
 
           #Use the newly computed values in the next iteration, since they are strictly smaller

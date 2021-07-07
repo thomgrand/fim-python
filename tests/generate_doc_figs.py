@@ -58,7 +58,7 @@ def generate_usage_example(save_fig=True):
         
     plt.close(fig)
 
-def generate_benchmark_plot(benchmark_data_fname, save_fig=True):
+def generate_benchmark_plot(benchmark_data_fname, data_field, save_fig=True, fname_postfix="", title=None):
     with open(benchmark_data_fname, "r") as bench_f:
         benchmark_data = json.load(bench_f)
     out_fname = os.path.join(os.path.dirname(__file__), *["..", "docs", "figs", "benchmark"])
@@ -89,7 +89,7 @@ def generate_benchmark_plot(benchmark_data_fname, save_fig=True):
                     nr_elems = data["nr_elems"]
 
                     label=("%d" % (dims) if not use_active_list else None) #('w. AL' if use_active_list else 'w/o AL')
-                    lines_h = axes[elem_dim_i].plot(nr_elems.values, data["runtime"].values, linestyle=('--' if use_active_list else '-'), color=colors[dim_i], label=label) #color='b' if use_active_list else 'r')
+                    lines_h = axes[elem_dim_i].plot(nr_elems.values, data[data_field].values, linestyle=('--' if use_active_list else '-'), color=colors[dim_i], label=label) #color='b' if use_active_list else 'r')
 
                     if not use_active_list:
                         lines_hs[elem_dims].append((lines_h[0], dims))
@@ -120,14 +120,17 @@ def generate_benchmark_plot(benchmark_data_fname, save_fig=True):
             handles, plot_dims = zip(*lines_hs[used_elem_dims[int(np.where(len_handles > 0)[0][0])]])        
             axes[1].legend(handles, plot_dims, title="$d=$", loc='center', bbox_to_anchor=(0.15, -0.3, 0.75, 0.25), borderpad=0.8, ncol=2)
 
-        fig.suptitle("Fimpy %s Benchmark" % (device.upper()))
+        if title is None:
+            fig.suptitle("Fimpy %s Benchmark" % (device.upper()))
+        else:
+            fig.suptitle(title % (device.upper()))
         fig.set_size_inches((14, 8))
         fig.tight_layout()
         figs.append(fig)
 
         if save_fig:
-            fig.savefig(out_fname + "_%s" % (device) + ".jpg")
-            fig.savefig(out_fname + "_%s" % (device) + ".pdf")
+            fig.savefig(out_fname + "_%s%s" % (device, fname_postfix) + ".jpg")
+            fig.savefig(out_fname + "_%s%s" % (device, fname_postfix) + ".pdf")
     plt.show()
     [plt.close(fig) for fig in figs]
     #plt.show()
@@ -135,4 +138,5 @@ def generate_benchmark_plot(benchmark_data_fname, save_fig=True):
 
 if __name__ == "__main__":
     #generate_usage_example(False)
-    generate_benchmark_plot(os.path.join(os.path.dirname(__file__), "benchmark_results_w_cpu.json"), save_fig=True)
+    generate_benchmark_plot(os.path.join(os.path.dirname(__file__), "benchmark_results_w_cpu.json"), save_fig=True, data_field="runtime")
+    generate_benchmark_plot(os.path.join(os.path.dirname(__file__), "benchmark_results_w_cpu.json"), save_fig=True, data_field="setup_time", fname_postfix="_setup", title="%s Setup Time")
