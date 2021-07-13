@@ -62,10 +62,10 @@ You should see the following figure with the computed :math:`\phi` for the given
 
 
 
-
+Detailed Contents
+--------------
 .. toctree::
    :maxdepth: 2
-   :caption: Detailed Contents
 
    interface.rst
    detailed_description.rst
@@ -84,7 +84,7 @@ Module API
 
 
 Indices and tables
-==================
+------------------
 
 * :ref:`genindex`
 * :ref:`modindex`

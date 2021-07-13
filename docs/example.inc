@@ -14,8 +14,9 @@
     elem_centers = np.mean(points[elems], axis=1)
 
     #The domain will have a small spot where movement will be slow
-    velocity_p = (1 / (1 + np.exp(3.5 - 25*np.linalg.norm(points - np.array([[0.33, 0.33]]), axis=-1)**2)))
-    velocity_e = (1 / (1 + np.exp(3.5 - 25*np.linalg.norm(elem_centers - np.array([[0.33, 0.33]]), axis=-1)**2)))
+    velocity_f = lambda x: (1 / (1 + np.exp(3.5 - 25*np.linalg.norm(x - np.array([[0.33, 0.33]]), axis=-1)**2)))
+    velocity_p = velocity_f(points) #For plotting
+    velocity_e = velocity_f(elem_centers) #For computing
     D = np.eye(2, dtype=np.float32)[np.newaxis] * velocity_e[..., np.newaxis, np.newaxis] #Isotropic propagation
 
     x0 = np.array([np.argmin(np.linalg.norm(points, axis=-1), axis=0)])
@@ -29,10 +30,7 @@
     fig, axes = plt.subplots(nrows=1, ncols=2, sharey=True)
     cont_f1 = axes[0].contourf(X, Y, phi.get().reshape(X.shape))
     axes[0].set_title("Distance from center")
-    #cbar = plt.colorbar(cont_f1)
-    #cbar.set_label("$\\phi$")
 
     cont_f2 = axes[1].contourf(X, Y, velocity_p.reshape(X.shape))
     axes[1].set_title("Assumed isotropic velocity")
-    #cbar = plt.colorbar(cont_f2)
-    #cbar.set_label("Velocity")
+    plt.show()

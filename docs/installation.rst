@@ -1,5 +1,5 @@
 Installation
-=====================================
+--------------
 
 The only prerequisite before installing is cython to compile some of the files
 
@@ -20,4 +20,9 @@ or simply via pip
 
 .. code-block:: bash
 
-    pip install fimpy[gpu]
+    pip install fim-python[gpu]
+
+.. note:: 
+
+    Installing the GPU version might take a while since many ``cupy`` modules are compiled using your system's ``nvcc`` compiler.
+    You can install the ``cupy`` binaries first as mentioned `here <https://docs.cupy.dev/en/stable/install.html#installing-cupy>`_, before installing ``fimpy``.
