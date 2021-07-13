@@ -25,22 +25,22 @@ The anisotropic eikonal equation is a non-linear partial differential equation, 
    \left<\nabla \phi, D \nabla \phi \right> &= 1 \quad &\text{on} \; \Omega \\
    \phi(\mathbf{x}_0) &= g(\mathbf{x}_0) \quad &\text{on} \; \Gamma \subset \Omega
    \end{array}
-   \right. ,
+   \right. .
 \end{equation*}
 In practice, this problem is often associated with computing the earliest arrival times $\phi$ of a wave from a set of given starting points $\mathbf{x}_0$ through a heterogeneous medium (i.e. different velocities are assigned throughout the medium). 
 This equation yields infinitely many weak solutions [@evans_1997_partial] and can thus not be straight-forwardly solved using standard Finite Element approaches.
 
-``fim-python`` implements the Fast Iterative Method (FIM) to solve the anisotropic eikonal equation by finding its unique viscosity solution.
-In this scenario, we compute $\phi$ on triangulated/tetrahedral meshes or line networks for a given $D$, $\mathbf{x}_0$ and $g$.
+``fim-python`` implements the Fast Iterative Method (FIM) purely in Python to solve the anisotropic eikonal equation by finding its unique viscosity solution.
+In this scenario, we compute $\phi$ on tetrahedral/triangular meshes or line networks for a given $D$, $\mathbf{x}_0$ and $g$.
 The method is implemented both on the CPU using [``numba``](https://numba.pydata.org/) and [``numpy``](https://numpy.org/), as well as the GPU with the help of [``cupy``](https://cupy.dev/) (depends on [CUDA](https://developer.nvidia.com/cuda-toolkit)).
 The library is meant to be easily and rapidly used for repeated evaluations on a mesh.
 
 The eikonal equation has many practical applications, including cardiac electrophysiology, image processing and geoscience, to approximate wave propagation through a medium.
 In the example of cardiac electrophysiology [@franzone2014mathematical], the electrical activation times $\phi$ are computed throughout the anisotropic heart muscle with varying conduction velocities $D$.
 
-The FIM locally computes an update rule, rooted in the Hamilton-Jacobi formalism of the eikonal problem, computing the path the front-wave will take through the current element.
-Since the algorithm is restricted to linear Lagrangian $\mathcal{P}^1$ elements, the path through an element will also be a straight line.
-In the case of tetrahedral domains, the FIM tries to find the origin of the linear update from a face spanned by three vertices $\mathbf{v}_1, \mathbf{v}_2, \mathbf{v}_3$ to the opposite vertex $\mathbf{v}_4$.
+The FIM locally computes an update rule to find the path the wavefront will take through a single element.
+Since the algorithm is restricted to linear elements, the path through an element will also be a straight line.
+In the case of tetrahedral domains, the FIM thus tries to find the path of the linear update from a face spanned by three vertices $\mathbf{v}_1, \mathbf{v}_2, \mathbf{v}_3$ to the opposite vertex $\mathbf{v}_4$.
 \autoref{fig:update} visualizes the update.
 For triangles and lines, the algorithm behaves similarly but the update origin is limited to a side or vertex respectively.
 The exact equations used to solve this problem in this repository were previously described (among others) in [@grandits_inverse_2020].
