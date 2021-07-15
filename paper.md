@@ -28,7 +28,7 @@ The anisotropic eikonal equation is a non-linear partial differential equation, 
    \right. .
 \end{equation*}
 In practice, this problem is often associated with computing the earliest arrival times $\phi$ of a wave from a set of given starting points $\mathbf{x}_0$ through a heterogeneous medium (i.e. different velocities are assigned throughout the medium). 
-This equation yields infinitely many weak solutions [@evans_1997_partial] and can thus not be straight-forwardly solved using standard Finite Element approaches.
+This equation yields infinitely many weak solutions [@evans_partial_2010] and can thus not be straight-forwardly solved using standard Finite Element approaches.
 
 ``fim-python`` implements the Fast Iterative Method (FIM) purely in Python to solve the anisotropic eikonal equation by finding its unique viscosity solution.
 In this scenario, we compute $\phi$ on tetrahedral/triangular meshes or line networks for a given $D$, $\mathbf{x}_0$ and $g$.
