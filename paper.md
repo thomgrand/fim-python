@@ -30,7 +30,7 @@ The anisotropic eikonal equation is a non-linear partial differential equation, 
 In practice, this problem is often associated with computing the earliest arrival times $\phi$ of a wave from a set of given starting points $\mathbf{x}_0$ through a heterogeneous medium (i.e. different velocities are assigned throughout the medium). 
 This equation yields infinitely many weak solutions [@evans_partial_2010] and can thus not be straight-forwardly solved using standard Finite Element approaches.
 
-``fim-python`` implements the Fast Iterative Method (FIM) purely in Python to solve the anisotropic eikonal equation by finding its unique viscosity solution.
+``fim-python`` implements the Fast Iterative Method (FIM), proposed in [@fu_fast_2013], purely in Python to solve the anisotropic eikonal equation by finding its unique viscosity solution.
 In this scenario, we compute $\phi$ on tetrahedral/triangular meshes or line networks for a given $D$, $\mathbf{x}_0$ and $g$.
 The method is implemented both on the CPU using [``numba``](https://numba.pydata.org/) and [``numpy``](https://numpy.org/), as well as the GPU with the help of [``cupy``](https://cupy.dev/) (depends on [CUDA](https://developer.nvidia.com/cuda-toolkit)).
 The library is meant to be easily and rapidly used for repeated evaluations on a mesh.
@@ -54,22 +54,16 @@ This version of the algorithm is bested suited for the GPU, since it is optimal 
 The *active list* method is more closely related to the method presented in [@fu_fast_2013]:
 We keep track of all vertices that require a recomputation in the current iteration on a so-called active list which we keep up-to-date. 
 
+# Comparison to other tools
+
+There are other tools available to solve variants of the eikonal equation, but they differ in functionality to ``fim-python``.
+
+[``scikit-fmm``](https://pypi.org/project/scikit-fmm/) implements the Fast Marching Method (FMM) [@sethian_fast_1996], which was designed to solve the isotropic eikonal equation ($D = c I$ for $c \in \mathbb{R}$ and $I$ being the identity matrix). The library works on uniform grids, rather than meshes.
+
+[``GPUTUM: Unstructured Eikonal``](https://github.com/SCIInstitute/SCI-Solver_Eikonal) implements the FIM in CUDA for triangulated surfaces and tetrahedral meshes, but has no Python bindings and is designed as a command line tool for single evaluations.
+
 # Statement of need
 
-The publicly available libraries to solve the eikonal equation have at least one of the following restrictions:
-
-* Isotropic eikonal equation only ($D = c I$ for $c \in \mathbb{R}$ and $I$ being the identity matrix), solved using Fast Marching [@sethian_fast_1996]
-* Limited support for multiple source points
-* 2D only
-* Restricted to uniform or structured grids
-* No Python implementation
-* CPU only
-
-``fim-python`` tries to address all these issues and makes installing straight-forward by also providing the package over [PyPI](https://pypi.org/), which can be installed using pip:
-
-```{bash}
-pip install cython
-pip install fim-python[gpu]
-```
+``fim-python`` tries to wrap the FIM for CPU and GPU into an easy-to-use Python package for multiple evaluations with a straight-forward installation over [PyPI](https://pypi.org/).
 
 # References

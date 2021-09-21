@@ -54,7 +54,7 @@ setup(name="fim-python",
      extras_require = {
           'gpu': lib_requires_gpu,
           'tests': test_requires_cpu,
-          'docs': ["sphinx", "pydata_sphinx_theme"]
+          'docs': ["sphinx", "pydata_sphinx_theme", "pandas"]
      }
      )
 

@@ -1,9 +1,9 @@
 import os
 import sys
-os.chdir("/home/thomas/aniso_diff/fim_python/")
-sys.path.append("/home/thomas/aniso_diff/fim_python/")
 import numpy as np
 import cupy as cp
+#from cupy.cuda.memory import OutOfMemoryError
+from cupy.cuda.runtime import CUDARuntimeError
 import scipy.io as sio
 from fimpy.solver import FIMPY
 import time
@@ -80,6 +80,7 @@ if __name__ == "__main__":
     bench_dict = {"device": [], "active_list": [], "dims": [], "elem_dims": [], "runtime": [], "setup_time": [], "elem_fname": [], "nr_points": [], "nr_elems": [],
                     "resolution": []}
 
+    bt = time.time()
     for device in ['cpu', 'gpu']:
         for use_active_list in [True, False]:
             
@@ -110,12 +111,20 @@ if __name__ == "__main__":
 
                         if device == 'cpu' and dims > 3 and elem_dims == 4 and resolution > 10:
                             continue
+                        
+                        try:
+                            solver, fname = run_single_test(device, use_active_list, dims, elem_dims, resolution, bench_dict)[-2:]
 
-                        solver, fname = run_single_test(device, use_active_list, dims, elem_dims, resolution, bench_dict)[-2:]
-                        if hasattr(solver, 'mempool'):
-                            solver.mempool.free_all_blocks()
+                            if hasattr(solver, 'mempool'):
+                                solver.mempool.free_all_blocks()
+                        except CUDARuntimeError as ex:
+                            print("A single benchmark failed with an exception (probably out of memory).", file=sys.stderr)
+                            print("Parameters: %d, %d, %d, %s" % (dims, elem_dims, resolution, use_active_list) , file=sys.stderr)
 
 
     with open(os.path.join(os.path.dirname(__file__), "benchmark_results_w_cpu.json"), "w") as bench_f:
         json.dump(bench_dict, bench_f, indent=2, sort_keys=True)
     #sio.savemat(os.path.join(os.path.dirname(__file__), "benchmark_results.mat"), bench_dict, do_compression=True)
+
+    at = time.time()
+    print("Benchmarking took %f seconds" % (at - bt))

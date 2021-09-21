@@ -31,3 +31,29 @@ The figure below shows the setup time for both methods.
 .. image:: figs/benchmark_gpu_setup.jpg
     :alt: Setup Time GPU
     :align: center
+
+Run the Benchmark
+-------------
+
+Before running the benchmark, make sure the library was installed to run the tests and the documentation:
+
+.. code-block:: bash
+
+    pip install fim-python[gpu,tests,docs]
+
+The benchmark can then be initiated by first generating the data and then running the actual benchmark
+
+.. code-block:: bash
+
+    python tests/generate_benchmark_data.py
+    python tests/run_benchmark.py
+
+The routine ``generate_benchmark_plot`` in ``tests/generate_docs_figs.py`` can be called to regenerate the documentation figures, including the above benchmark plot
+
+.. code-block:: bash
+
+    python tests/generate_docs_figs.py
+
+.. note::
+
+    The benchmark exhaustively tests the library for many different meshes and can therefore take one hour or more to finish.

@@ -29,7 +29,7 @@ test_resolutions = {1: [10, 25, 50],
 
 bench_resolutions = {1: test_resolutions[1] + [100, 200, 400, 800, 1500],
                         2: test_resolutions[2] + [25, 50, 100, 200, 300, 500], #1000],
-                        3: test_resolutions[3] + [25, 50, 75, 100]}
+                        3: test_resolutions[3] + [25, 50]} #, 75, 100]}
 
 elem_fnames = {2: "network", 3: "surface", 4: "tetra_domain"}
 
@@ -44,6 +44,9 @@ def generate_test_data(gen_bench_data=False):
         data_dir = os.path.join(os.path.dirname(__file__), "benchmark_data")
     else:
         data_dir = os.path.join(os.path.dirname(__file__), "data")
+
+    if not os.path.isdir(data_dir):
+        os.mkdir(data_dir)
 
     for elem_dims in test_elem_dims:
         valid_dims = np.array(bench_dims if gen_bench_data else test_dims)

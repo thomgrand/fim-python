@@ -23,6 +23,7 @@
     x0_vals = np.array([0.])
 
     #Create a FIM solver, by default the GPU solver will be called with the active list
+    #Set device='cpu' to run on cpu and use_active_list=false to use Jacobi method
     fim = FIMPY.create_fim_solver(points, elems, D)
     phi = fim.comp_fim(x0, x0_vals)
 
