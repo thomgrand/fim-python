@@ -23,12 +23,6 @@ Evans, Lawrence C. "Partial differential equations." *Graduate studies in mathem
 
 # Installation
 
-[Cython](https://cython.org/) is required as a prerequisite
-
-```bash
-pip install cython
-```
-
 The easiest way to install the library is using pip
 ```bash
 pip install fim-python[gpu] #GPU version

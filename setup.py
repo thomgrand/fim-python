@@ -20,11 +20,9 @@ fim_cutils_extension = Extension(
                               compiler_directives={'language_level' : "3"}
                          )
 
-lib_requires_cpu = ["numpy>=1.19", "numba>=0.5", "Cython>=0.29.22"]
-
+lib_requires_cpu = ["numpy>=1.19,<1.21", "numba>=0.5", "Cython>=0.29.22"]
 lib_requires_gpu = ["cupy>=9.0"]
-test_requires_cpu = lib_requires_cpu + ["scipy", "pytest", "matplotlib", "pandas"]    
-test_requires_gpu = lib_requires_gpu + ["scipy", "pytest", "matplotlib", "pandas"]    
+test_requires_cpu = ["scipy", "pytest", "pytest-cov", "matplotlib", "pandas", "ipython"]    
 
 with open(os.path.join(os.path.dirname(__file__), 'README.md'), 'r') as readme:
      long_description = readme.read()
@@ -54,7 +52,7 @@ setup(name="fim-python",
      extras_require = {
           'gpu': lib_requires_gpu,
           'tests': test_requires_cpu,
-          'docs': ["sphinx", "pydata_sphinx_theme", "pandas"]
+          'docs': ["sphinx", "pydata_sphinx_theme", "pandas", "ipython"]
      }
      )
 

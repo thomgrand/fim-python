@@ -35,9 +35,6 @@ In this scenario, we compute $\phi$ on tetrahedral/triangular meshes or line net
 The method is implemented both on the CPU using [``numba``](https://numba.pydata.org/) and [``numpy``](https://numpy.org/), as well as the GPU with the help of [``cupy``](https://cupy.dev/) (depends on [CUDA](https://developer.nvidia.com/cuda-toolkit)).
 The library is meant to be easily and rapidly used for repeated evaluations on a mesh.
 
-The eikonal equation has many practical applications, including cardiac electrophysiology, image processing and geoscience, to approximate wave propagation through a medium.
-In the example of cardiac electrophysiology [@franzone2014mathematical], the electrical activation times $\phi$ are computed throughout the anisotropic heart muscle with varying conduction velocities $D$.
-
 The FIM locally computes an update rule to find the path the wavefront will take through a single element.
 Since the algorithm is restricted to linear elements, the path through an element will also be a straight line.
 In the case of tetrahedral domains, the FIM thus tries to find the path of the linear update from a face spanned by three vertices $\mathbf{v}_1, \mathbf{v}_2, \mathbf{v}_3$ to the opposite vertex $\mathbf{v}_4$.
@@ -64,6 +61,10 @@ There are other tools available to solve variants of the eikonal equation, but t
 
 # Statement of need
 
+The eikonal equation has many practical applications, including cardiac electrophysiology, image processing and geoscience, to approximate wave propagation through a medium.
+In the example of cardiac electrophysiology [@franzone2014mathematical], the electrical activation times $\phi$ are computed throughout the anisotropic heart muscle with varying conduction velocities $D$.
+
 ``fim-python`` tries to wrap the FIM for CPU and GPU into an easy-to-use Python package for multiple evaluations with a straight-forward installation over [PyPI](https://pypi.org/).
+This should provide engineers and researchers alike with an accessible tool that allows evaluations of the eikonal equation for general scenarios. 
 
 # References

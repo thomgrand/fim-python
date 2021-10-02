@@ -1,13 +1,6 @@
 Installation
 --------------
 
-The only prerequisite before installing is cython to compile some of the files
-
-.. code-block:: bash
-
-    pip install cython
-
-All remaining dependencies should be installed directly using pip.
 To install, either clone the repository and install it:
 
 .. code-block:: bash
@@ -16,7 +9,7 @@ To install, either clone the repository and install it:
     pip install -e .[gpu]
 
 
-or simply via pip 
+or simply install the library over `PyPI <https://pypi.org>`_.
 
 .. code-block:: bash
 
