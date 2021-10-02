@@ -1,0 +1,8 @@
+#Pip install files
+*.egg-info*
+
+#Cython temporaries
+*.cpp
+*.c
+*.cc
+*.pyd

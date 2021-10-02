@@ -20,7 +20,7 @@ Steps to reproduce the unexpected behavior
   - Numpy
   - Cupy
 
-See Contributing.md for a script to automatically output the variables
+See [Contributing.md](https://github.com/thomgrand/fim-python/blob/master/CONTRIBUTING.md) for a script to automatically output the variables
 
 **Additional information [Optional]**
 Add any other information about the problem here.
