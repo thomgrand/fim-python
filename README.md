@@ -3,6 +3,7 @@ This repository implements the Fast Iterative Method on [tetrahedral domains](ht
 
 [![codecov](https://codecov.io/gh/thomgrand/fim-python/branch/master/graph/badge.svg?token=DG05WR5030)](https://codecov.io/gh/thomgrand/fim-python)
 [![CI Tests](https://github.com/thomgrand/fim-python/actions/workflows/python-package.yml/badge.svg)](https://github.com/thomgrand/fim-python/actions/workflows/python-package.yml)
+[![DOI](https://joss.theoj.org/papers/10.21105/joss.03641/status.svg)](https://doi.org/10.21105/joss.03641)
 
 # Details
 The anisotropic eikonal equation is given by
@@ -95,6 +96,24 @@ On the CPU, `use_active_list=True` outperforms the Jacobi approach for almost al
 # Documentation
 
 [https://fim-python.readthedocs.io/en/latest](https://fim-python.readthedocs.io/en/latest)
+
+# Citation
+
+If you find this work useful in your research, please consider citing the paper in the [Journal of Open Source Software](https://joss.theoj.org/)
+```bibtex
+@article{grandits_fast_2021,
+  doi = {10.21105/joss.03641},
+  url = {https://doi.org/10.21105/joss.03641},
+  year = {2021},
+  publisher = {The Open Journal},
+  volume = {6},
+  number = {66},
+  pages = {3641},
+  author = {Thomas Grandits},
+  title = {A Fast Iterative Method Python package},
+  journal = {Journal of Open Source Software}
+}
+```
 
 # Benchmark
 
