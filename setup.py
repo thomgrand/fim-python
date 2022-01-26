@@ -12,7 +12,7 @@ else:
 
 fim_cutils_extension = Extension(
                               name="fimpy.fim_cutils.fim_cutils",
-                              sources=["fimpy/fim_cutils/fim_cutils.pyx"],                 # our Cython source
+                              sources=["fimpy/fim_cutils/fim_cutils.pyx"], # our Cython source
                               #sources=["Rectangle.cpp"],  # additional source file(s)
                               language="c++",             # generate C++ code
                               extra_compile_args=extra_compile_args,
@@ -20,7 +20,17 @@ fim_cutils_extension = Extension(
                               compiler_directives={'language_level' : "3"}
                          )
 
-lib_requires_cpu = ["numpy>=1.19,<1.21", "numba>=0.5", "Cython>=0.29.22"]
+comp_cutils_extension = Extension(
+                              name="fimpy.utils.cython.comp",
+                              sources=["fimpy/utils/cython/comp.pyx"], # our Cython source
+                              #sources=["Rectangle.cpp"],  # additional source file(s)
+                              language="c++",             # generate C++ code
+                              extra_compile_args=extra_compile_args,
+                              extra_link_args=extra_link_args,
+                              compiler_directives={'language_level' : "3"}
+                         )
+
+lib_requires_cpu = ["numpy", "Cython>=0.29.22"]
 lib_requires_gpu = ["cupy>=9.0"]
 test_requires_cpu = ["scipy", "pytest", "pytest-cov", "matplotlib", "pandas", "ipython"]    
 
@@ -33,7 +43,7 @@ setup(name="fim-python",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/thomgrand/fim-python",
-    packages=["fimpy", "fimpy.utils", "fimpy.fim_cutils"],
+    packages=["fimpy", "fimpy.utils", "fimpy.fim_cutils", "fimpy.utils.cython"],
     install_requires=lib_requires_cpu,
     classifiers=[
         "Programming Language :: Python :: 3",
@@ -48,7 +58,7 @@ setup(name="fim-python",
      author="Thomas Grandits",
      author_email="tomdev@gmx.net",
      license="AGPL",     
-     ext_modules = [fim_cutils_extension],
+     ext_modules = [fim_cutils_extension, comp_cutils_extension],
      extras_require = {
           'gpu': lib_requires_gpu,
           'tests': test_requires_cpu,

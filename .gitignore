@@ -1,8 +1,19 @@
 #Pip install files
 *.egg-info*
+*.pyc
+*__pycache__*
 
 #Cython temporaries
 *.cpp
 *.c
 *.cc
 *.pyd
+
+#Documentation build folder
+docs/_build/*
+docs/build/*
+docs/_autosummary*
+coverage_html/*
+
+#General build folders
+build/*

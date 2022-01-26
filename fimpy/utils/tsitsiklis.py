@@ -2,13 +2,13 @@
 """
 #import utility
 import numpy as np
-from .comp import metric_norm_matrix_2D_njit, metric_norm_matrix_3D_njit
+from .comp import metric_norm_matrix_2D_cython, metric_norm_matrix_3D_cython
 from .comp import metric_sqr_norm_matrix, metric_norm_matrix
 from collections import defaultdict
 
 norm_map = {np: defaultdict(lambda: (metric_norm_matrix, metric_sqr_norm_matrix))}
-norm_map[np][2] = (lambda A, x1, x2: metric_norm_matrix_2D_njit(A, x1, x2, True), lambda A, x1, x2: metric_norm_matrix_2D_njit(A, x1, x2, False))
-norm_map[np][3] = (lambda A, x1, x2: metric_norm_matrix_3D_njit(A, x1, x2, True), lambda A, x1, x2: metric_norm_matrix_3D_njit(A, x1, x2, False))
+norm_map[np][2] = (lambda A, x1, x2: metric_norm_matrix_2D_cython(A, x1, x2, True), lambda A, x1, x2: metric_norm_matrix_2D_cython(A, x1, x2, False))
+norm_map[np][3] = (lambda A, x1, x2: metric_norm_matrix_3D_cython(A, x1, x2, True), lambda A, x1, x2: metric_norm_matrix_3D_cython(A, x1, x2, False))
 
 try:
     import cupy as cp
