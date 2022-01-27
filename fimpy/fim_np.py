@@ -1,15 +1,12 @@
-"""This file contains the CPU implementation of the Fast Iterative Method, based on numpy and numba.
+"""This file contains the CPU implementation of the Fast Iterative Method, based on numpy and cython.
 """
 
-from fimpy.utils.comp import metric_norm_matrix_3D_njit
-from numba.np.ufunc import parallel
+from fimpy.utils.comp import metric_norm_matrix_3D_cython
 import numpy as np
 from .fim_base import FIMBase
 #from utils.nh_manager import calculate_all_triang_updates, calculate_specific_triang_updates
-from numba import njit
 from .fim_cutils import compute_perm_mask
 
-@njit(cache=True, nogil=True)
 def tsitsiklis_update_triang_3D(x1, x2, x3, D, u1, u2, p11, p12, p22):
   """Custom numpy implementation of :meth:`fimpy.fim_base.FIMBase.tsitsiklis_update_triang` to speed up computations for :math:`d = 3`.
   """
@@ -28,13 +25,13 @@ def tsitsiklis_update_triang_3D(x1, x2, x3, D, u1, u2, p11, p12, p22):
   for alpha in [alpha1, alpha2]:
       x = x3 - (np.expand_dims(alpha, axis=-1) * x1 + (1 - np.expand_dims(alpha, axis=-1)) * x2)
       u3.append(alpha * u1 + (1 - alpha) * u2
-              + metric_norm_matrix_3D_njit(D, x, x, ret_sqrt=True))
+              + metric_norm_matrix_3D_cython(D, x, x, ret_sqrt=True))
 
   return np.minimum(u3[0], u3[1]), sqrt_invalid_mask
 
 
 class FIMNP(FIMBase):
-  """This class implements the Fast Iterative Method on the CPU using a combination of numpy and numba.
+  """This class implements the Fast Iterative Method on the CPU using a combination of numpy and cython.
     The employed algorithm is the Jacobi algorithm, updating all nodes in each iteration.
     For details on the parameters, see :class:`fimpy.fim_base.FIMBase`.
   """
@@ -67,7 +64,7 @@ class FIMNP(FIMBase):
     return self.phi_sol
 
 class FIMNPAL(FIMBase):
-  """This class implements the Fast Iterative Method on the CPU using a combination of numpy and numba.
+  """This class implements the Fast Iterative Method on the CPU using a combination of numpy and cython.
     The employed algorithm is the active list algorithm (as proposed in the original paper), updating only a current estimation of the wavefront.
     For details on the parameters, see :class:`fimpy.fim_base.FIMBase`.
   """
@@ -84,9 +81,9 @@ class FIMNPAL(FIMBase):
       z2 = x2 - x3
       z1 = x1 - x2
 
-      p11 = metric_norm_matrix_3D_njit(D, x1=z1, x2=z1, ret_sqrt=False)
-      p12 = metric_norm_matrix_3D_njit(D, x1=z1, x2=z2, ret_sqrt=False)
-      p22 = metric_norm_matrix_3D_njit(D, x1=z2, x2=z2, ret_sqrt=False)
+      p11 = metric_norm_matrix_3D_cython(D, x1=z1, x2=z1, ret_sqrt=False)
+      p12 = metric_norm_matrix_3D_cython(D, x1=z1, x2=z2, ret_sqrt=False)
+      p22 = metric_norm_matrix_3D_cython(D, x1=z2, x2=z2, ret_sqrt=False)
 
       u3, sqrt_invalid_mask = tsitsiklis_update_triang_3D(x1, x2, x3, D, u1, u2, p11, p12, p22)
       u3_point = self.tsitsiklis_update_point_sol(x1, x2, x3, D, u1, u2, lib=lib)

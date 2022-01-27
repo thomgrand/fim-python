@@ -14,8 +14,6 @@ except ImportError as err:
     print("Cupy import failed. The tests will skip the cupy tests")
     cupy_enabled = False
 
-#os.environ["NUMBA_DISABLE_JIT"] = "1" #Disables the jit for coverage
-
 class TestFIMSolversInit():
     
     @pytest.mark.parametrize('init_D', [True, False])

@@ -24,8 +24,6 @@ print("OS Info: %s, %s, v%s" % (os.name, platform.system(), platform.release()))
 
 import numpy
 print("Numpy version: %s" % (numpy.__version__))
-import numba
-print("Numba version: %s" % (numba.__version__))
 
 try:
     import cupy

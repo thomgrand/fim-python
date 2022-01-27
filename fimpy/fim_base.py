@@ -5,7 +5,6 @@ from typing import Type
 import numpy as np
 from itertools import permutations
 from abc import abstractmethod
-from numba import njit, prange
 from .utils.tsitsiklis import norm_map
 #import pyximport; pyximport.install()
 from .fim_cutils import compute_point_elem_map_c, compute_neighborhood_map_c
@@ -143,7 +142,6 @@ class FIMBase():
         nh_map = np.zeros(shape=[self.nr_points, max_point_elem_ratio * self.elem_dims], dtype=np.int32)
 
         nh_map = np.array(compute_neighborhood_map_c(self.elems, nh_map))
-        #assert(np.all(nh_map == compute_neighborhood_map_njit(self.elems, nh_map.copy()))) #TODO: Move into test
 
         nh_map = np.sort(nh_map, axis=-1)
         
@@ -165,7 +163,6 @@ class FIMBase():
         max_point_elem_ratio = np.max(np.unique(self.elems, return_counts=True)[1])
         point_elem_map = np.zeros(shape=[self.nr_points, max_point_elem_ratio], dtype=np.int32)
         point_elem_map = np.sort(compute_point_elem_map_c(self.elems, point_elem_map), axis=-1)
-        #assert(np.all(point_elem_map == np.sort(compute_point_elem_map_njit(self.elems, point_elem_map.copy()), axis=-1))) #TODO: Move into test
         return point_elem_map
 
     def tsitsiklis_update_line(self, x1, x2, D, u1, lib=np):
