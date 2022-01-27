@@ -11,19 +11,25 @@ except ImportError as err:
 
 
 def _broadcast_metric_params(A, x1, x2):
+  """Broadcast the metric parameters as a preperation for the Cython functions.
+  See :func:`metric_sqr_norm_matrix`.
+  """
   if A.ndim == 4: #Broadcasting
     #To remove the read-only problem, copy back
     A = np.broadcast_to(A, [A.shape[0], max(A.shape[1], x1.shape[1]), x1.shape[-1], x1.shape[-1]]).copy()
-    x1 = np.broadcast_to(x1, A.shape[:-1]).copy()
-    x2 = np.broadcast_to(x2, A.shape[:-1]).copy()
+    x1 = np.broadcast_to(x1, A.shape[:-1])
+    x2 = np.broadcast_to(x2, A.shape[:-1])
 
   return A, x1, x2
 
 
 def metric_norm_matrix_2D_cython(A, x1, x2, ret_sqrt=True):
+  """Custom implementation of :func:`metric_sqr_norm_matrix` for ``lib = np`` and :math:`d = 2`.
+  """
   A, x1, x2 = _broadcast_metric_params(A, x1, x2)
   A_flat, x1_flat, x2_flat = A.reshape([-1, 2, 2]), x1.reshape([-1, 2]), x2.reshape([-1, 2])
-  norm = metric_sqr_norm_matrix_2D_vec(A_flat, x1_flat, x2_flat)
+  norm = np.empty(shape=A_flat.shape[0], dtype=A_flat.dtype)
+  norm = np.array(metric_sqr_norm_matrix_2D_vec(A_flat, x1_flat, x2_flat, norm))
 
   if ret_sqrt:
     norm = np.sqrt(norm)
@@ -31,9 +37,12 @@ def metric_norm_matrix_2D_cython(A, x1, x2, ret_sqrt=True):
   return norm.reshape(A.shape[:-2])
 
 def metric_norm_matrix_3D_cython(A, x1, x2, ret_sqrt=True):
+  """Custom implementation of :func:`metric_sqr_norm_matrix` for ``lib = np`` and :math:`d = 3`.
+  """
   A, x1, x2 = _broadcast_metric_params(A, x1, x2)
   A_flat, x1_flat, x2_flat = A.reshape([-1, 3, 3]), x1.reshape([-1, 3]), x2.reshape([-1, 3])
-  norm = metric_sqr_norm_matrix_3D_vec(A_flat, x1_flat, x2_flat)
+  norm = np.empty(shape=A_flat.shape[0], dtype=A_flat.dtype)
+  norm = np.array(metric_sqr_norm_matrix_3D_vec(A_flat, x1_flat, x2_flat, norm))
 
   if ret_sqrt:
     norm = np.sqrt(norm)
