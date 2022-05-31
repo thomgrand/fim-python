@@ -58,25 +58,25 @@ jobs:
       run: |
         python -m pytest --cov-config=.coveragerc_cpu --cov=fimpy tests/
 
-#  test_lib_gpu:
-#
-#    runs-on: [gpu]
-#    strategy:
-#      fail-fast: false
-#      matrix:
-#        python-version: [3.7]
-#
-#    steps:
-#    - uses: actions/checkout@v2
-#    - name: Set up Python ${{ matrix.python-version }}
-#      uses: actions/setup-python@v2
-#      with:
-#        python-version: ${{ matrix.python-version }}
-#    - name: Install with pip
-#      run: |
-#        pip install -e .[gpu,tests]
-#        python tests/generate_test_data.py
-#    - name: Test with pytest
-#      run: |
-#        cd tests
-#        python -m pytest .
+  test_lib_pip_macos:
+
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [3.7]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install with pip
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .[tests]
+        python tests/generate_test_data.py
+    - name: Test with pytest
+      run: |
+        python -m pytest --cov-config=.coveragerc_cpu --cov=fimpy tests/
