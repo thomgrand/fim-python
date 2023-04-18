@@ -1,7 +1,7 @@
 #import unittest
 import pytest
 #from .
-from fimpy.solver import FIMPY
+from fimpy.solver import create_fim_solver
 import numpy as np
 import os
 import scipy.io as sio
@@ -27,7 +27,7 @@ class TestFIMSolversInit():
         if init_D:
             D = np.eye(dims)[np.newaxis]
 
-        fim_solver = FIMPY.create_fim_solver(points, elems, D, device='cpu', precision=precision, use_active_list=use_active_list)
+        fim_solver = create_fim_solver(points, elems, D, device='cpu', precision=precision, use_active_list=use_active_list)
 
     @pytest.mark.parametrize('init_D', [True, False])
     @pytest.mark.parametrize('dims', [1, 2, 3])
@@ -41,7 +41,7 @@ class TestFIMSolversInit():
         if init_D:
             D = np.eye(dims)[np.newaxis]
 
-        fim_solver = FIMPY.create_fim_solver(points, elems, D, device='gpu', precision=precision, use_active_list=use_active_list)
+        fim_solver = create_fim_solver(points, elems, D, device='gpu', precision=precision, use_active_list=use_active_list)
 
     @pytest.mark.parametrize('precision', [np.float32, np.float64])
     def test_error_init(self, precision, device='cpu'):
@@ -50,39 +50,39 @@ class TestFIMSolversInit():
 
         #Wrong dimensions
         with pytest.raises(Exception):
-            FIMPY.create_fim_solver(points, elems)
+            create_fim_solver(points, elems)
 
         #Points not numeric
         points = np.array([[0, 0], [1, 0]]).astype(np.int32)
         elems = np.array([[0, 1]])
         with pytest.raises(Exception):
-            FIMPY.create_fim_solver(points, elems)
+            create_fim_solver(points, elems)
 
         #D and elems not matching
         points = np.array([[0., 0], [1, 0]])
         elems = np.array([[0, 1]])
         D = np.tile(np.eye(2)[np.newaxis], [2, 1])
         with pytest.raises(Exception):
-            FIMPY.create_fim_solver(points, elems, D)
+            create_fim_solver(points, elems, D)
 
         #elems references non-existant points
         points = np.array([[0., 0.], [1., 0.]])
         elems = np.array([[0, 1, 2]])
         with pytest.raises(Exception):
-            FIMPY.create_fim_solver(points, elems, precision=precision, device=device)
+            create_fim_solver(points, elems, precision=precision, device=device)
 
         
         #points not contained in any element
         points = np.array([[0., 0.], [1., 0.], [0., 1.]])
         elems = np.array([[0, 1]])
         with pytest.raises(Exception):
-            FIMPY.create_fim_solver(points, elems, precision=precision, device=device)
+            create_fim_solver(points, elems, precision=precision, device=device)
 
         #Unsupported element dimensions (Polygons and other elements)
         points = np.array([[0., 0.], [1., 0.], [0., 1.], [1., 1.], [-1., 0.]])
         elems = np.array([[0, 1, 2, 3, 4]])
         with pytest.raises(Exception):
-            FIMPY.create_fim_solver(points, elems, precision=precision, device=device)
+            create_fim_solver(points, elems, precision=precision, device=device)
         
 
     @pytest.mark.skipif(not cupy_enabled, reason='Cupy could not be imported. GPU tests unavailable')
@@ -116,7 +116,7 @@ class TestFIMSolversComputations():
             nr_points = points.shape[0]
 
             #D specified at initialization
-            solver = FIMPY.create_fim_solver(points, elems, D, precision=precision, device=device, use_active_list=use_active_list)
+            solver = create_fim_solver(points, elems, D, precision=precision, device=device, use_active_list=use_active_list)
             x0 = np.array([np.random.choice(nr_points)])
             x0_vals = np.array([0.])
             phi1 = solver.comp_fim(x0, x0_vals)
@@ -126,7 +126,7 @@ class TestFIMSolversComputations():
             assert(np.all(~np.isnan(phi1)))
 
             #D specified at computation
-            solver = FIMPY.create_fim_solver(points, elems, precision=precision, device=device, use_active_list=use_active_list)
+            solver = create_fim_solver(points, elems, precision=precision, device=device, use_active_list=use_active_list)
             #Fails without specifying D
             with pytest.raises(Exception):
                 solver.comp_fim(x0, x0_vals)

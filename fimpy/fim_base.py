@@ -6,7 +6,6 @@ import numpy as np
 from itertools import permutations
 from abc import abstractmethod
 from .utils.tsitsiklis import norm_map
-#import pyximport; pyximport.install()
 from .fim_cutils import compute_point_elem_map_c, compute_neighborhood_map_c
 
 class FIMBase():
@@ -357,10 +356,7 @@ class FIMBase():
                                                   D, us_perm[..., 0], us_perm[..., 1], lib=lib)
 
         #Now we need to take the minimum result of old and all new
-        #if lib == np:
         lib.minimum.at(us_new, elems_perm[..., -1], us_result)
-        #elif lib == cp:
-        #    cpx.scatter_min(us_new, elems_perm[..., -1], us_result)
 
         return us_new
 
@@ -483,9 +479,10 @@ class FIMBase():
         """
         #Suppress warnings of the computations, since they should be handled internally
         with np.errstate(divide='ignore', invalid='ignore', over='ignore'):
-            assert(metrics is not None or self.metrics is not None) #Metrics were neither in the constructor, nor here given
+            #TODO: Maybe use identity in this case?
+            assert metrics is not None or self.metrics is not None, f"Metrics (D) need to be provided in comp_fim, or at construction in __init__"
             if metrics is not None:
                 self.check_metrics_argument(metrics)
                 metrics = np.linalg.inv(metrics).astype(self.precision) #The inverse metric is used in the FIM algorithm
 
-            return self._comp_fim(x0, x0_vals, metrics)
+            return self._comp_fim(x0, x0_vals, metrics, max_iterations=max_iterations)

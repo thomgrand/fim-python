@@ -139,9 +139,8 @@ class FIMCupy(FIMBase):
     self.streams = [cp.cuda.Stream(non_blocking=False) for i in range(4)]
     self.mempool = cp.get_default_memory_pool()
 
-  def __del__(self):
-    #self.mempool.free_all_blocks()
-    pass
+  def free_gpu_mem(self):
+    self.mempool.free_all_blocks()
 
   def calculate_all_line_updates(self, elems_perm, xs_perm, D, us, lib=np):
     us_new = us.copy() 
@@ -150,7 +149,7 @@ class FIMCupy(FIMBase):
 
     us_result = self.tsitsiklis_update_line(xs_perm[..., 0, :], xs_perm[..., 1, :],
                             D_broadcasted, us_perm[..., 0], lib=cp)
-    cpx.scatter_min(us_new, elems_perm[..., -1], us_result)
+    cp.minimum.at(us_new, elems_perm[..., -1], us_result)
 
     return us_new
 
@@ -162,7 +161,7 @@ class FIMCupy(FIMBase):
     us_result = self.tsitsiklis_update_triang(xs_perm[..., 0, :], xs_perm[..., 1, :], xs_perm[..., 2, :],
                                               D_broadcasted, us_perm[..., 0], us_perm[..., 1], lib=lib)
 
-    cpx.scatter_min(us_new, elems_perm[..., -1], us_result)
+    cp.minimum.at(us_new, elems_perm[..., -1], us_result)
     return us_new
 
   def tsitsiklis_update_tetra(self, x1, x2, x3, x4, D, u1, u2, u3, lib=np):
@@ -191,7 +190,7 @@ class FIMCupy(FIMBase):
 
     us_result = self.tsitsiklis_update_tetra(xs_perm[..., 0, :], xs_perm[..., 1, :], xs_perm[..., 2, :], xs_perm[..., 3, :],
                             D_broadcasted, us_perm[..., 0], us_perm[..., 1], us_perm[..., 2], lib=cp)
-    cpx.scatter_min(us_new, elems_perm[..., -1], us_result)
+    cp.minimum.at(us_new, elems_perm[..., -1], us_result)
 
     return us_new
 
@@ -252,7 +251,6 @@ class FIMCupyAL(FIMBase):
 
     self.active_list = cp.array(self.active_list)
     self.mempool = cp.get_default_memory_pool()
-    #self.mempool.set_limit(size=self.nr_elems * 4 * 8 * 250)
     self.norm = self.norm_map[cp][self.dims]
 
     if self.dims == 2:
@@ -295,27 +293,20 @@ class FIMCupyAL(FIMBase):
         An [?] array holding the indices of the unique element/point indices.
     """
     if elem_map:
-      cpx.scatter_add(self.elem_unique_map, inds, self.elem_ones[inds])
-      #self.elem_unique_map[inds] = 1
+      cp.add.at(self.elem_unique_map, inds, self.elem_ones[inds])
       unique_inds = self.elem_unique_map.nonzero()[0]
-      #unique_mask = self.elem_unique_map != 0
       self.elem_unique_map[:] = 0 #Reset for next run
     else:
-      cpx.scatter_add(self.points_unique_map, inds, self.points_ones[inds])
-      #self.points_unique_map[inds] = 1
+      cp.add.at(self.points_unique_map, inds, self.points_ones[inds])
       unique_inds = self.points_unique_map.nonzero()[0]
-      #unique_mask = self.points_unique_map != 0
       self.points_unique_map[:] = 0 #Reset for next run
 
-    #return unique_mask
     return unique_inds
 
-  def __del__(self):
+  def free_gpu_mem(self):
     self.mempool.free_all_blocks()
-    #pass
   
   def tsitsiklis_update_triang(self, x1, x2, x3, D, u1, u2, lib=np, use_streams=None):
-        #norm_f, norm_sqr_f = self.norm_map[lib][D.shape[-1]]
 
         #Called for non tetra meshes -> Streams are available
         if self.elem_dims == 3:
@@ -349,7 +340,7 @@ class FIMCupyAL(FIMBase):
                                               D, us_perm[..., 0], us_perm[..., 1], lib=lib)
 
     #Now we need to take the minimum result of old and all new
-    cpx.scatter_min(us_new, elems_perm[..., -1], us_result)
+    cp.minimum.at(us_new, elems_perm[..., -1], us_result)
 
     return us_new
 
@@ -358,7 +349,7 @@ class FIMCupyAL(FIMBase):
     us_perm = us[elems_perm]
     us_result = self.tsitsiklis_update_line(xs_perm[..., 0, :], xs_perm[..., 1, :],
                             D, us_perm[..., 0], lib=lib)
-    cpx.scatter_min(us_new, elems_perm[..., -1], us_result)
+    cp.minimum.at(us_new, elems_perm[..., -1], us_result)
 
     return us_new
   
@@ -369,11 +360,8 @@ class FIMCupyAL(FIMBase):
       u_tet = lib.where(cp.isnan(u_tet), lib.inf, u_tet)
 
     #Face calculations (Includes possible line calculations)
-    #with self.streams[1]:
     triang1 = self.tsitsiklis_update_triang(x1, x2, x4, D, u1, u2, cp, (self.streams[1], self.streams[2]))
-    #with self.streams[2]:
     triang2 = self.tsitsiklis_update_triang(x1, x3, x4, D, u1, u3, cp, (self.streams[3], self.streams[4]))
-    #with self.streams[3]:
     triang3 = self.tsitsiklis_update_triang(x2, x3, x4, D, u2, u3, cp, (self.streams[5], self.streams[6]))
 
     u_triang = lib.minimum(triang1, triang2)
@@ -387,16 +375,12 @@ class FIMCupyAL(FIMBase):
     else:
       return super().tsitsiklis_update_tetra_quadr(D, k, z1, z2, cp)
 
-  #def tsitsiklis_update_tetra(self, x1, x2, x3, x4, D, u1, u2, u3, lib=np):
-
-
-
   def calculate_specific_tetra_updates(self, elems_perm, xs_perm, D, us, lib=np):
     us_new = us.copy() 
     us_perm = us[elems_perm]
     us_result = self.tsitsiklis_update_tetra(xs_perm[..., 0, :], xs_perm[..., 1, :], xs_perm[..., 2, :], xs_perm[..., 3, :],
                             D, us_perm[..., 0], us_perm[..., 1], us_perm[..., 2], lib=cp)
-    cpx.scatter_min(us_new, elems_perm[..., -1], us_result)
+    cp.minimum.at(us_new, elems_perm[..., -1], us_result)
 
     return us_new
 
