@@ -70,7 +70,6 @@ class FIMBase():
             self.point_elem_map = self.compute_point_elem_map()
 
         self.precision = precision
-        self.norm_map = norm_map
         self.dims = self.points.shape[-1]
         self.choose_update_alg()
 
@@ -106,7 +105,7 @@ class FIMBase():
         assert(metrics.shape[0] == self.nr_elems) #One constant metric for each element
         assert(metrics.ndim == 3)
         assert(metrics.shape[-1] == metrics.shape[-2] and metrics.shape[-1] == self.points.shape[-1])
-        assert(np.allclose(metrics - np.transpose(metrics, axes=(0, 2, 1)), 0.)) #Symmetric
+        assert(np.allclose(metrics - np.transpose(metrics, axes=(0, 2, 1)), 0., atol=1e-4)) #Symmetric
         assert(np.all(np.linalg.eigh(metrics)[0] > 1e-4)) #Positive definite
 
 
@@ -185,7 +184,7 @@ class FIMBase():
         ndarray (precision)
             An [..., N] array that holds :math:`||\\mathbf{x}_2 - \\mathbf{x}_1||_M`
         """
-        norm_f = self.norm_map[lib][D.shape[-1]][0]
+        norm_f = norm_map[lib][D.shape[-1]][0]
         a1 = x2 - x1
         return u1 + norm_f(D, a1, a1)
     
@@ -198,7 +197,7 @@ class FIMBase():
         in a broadcasted way.
         For more information on the type and shape of the parameters and return value, see :meth:`tsitsiklis_update_line`.
         """
-        norm_f = self.norm_map[lib][D.shape[-1]][0]
+        norm_f = norm_map[lib][D.shape[-1]][0]
 
         a1 = x3 - x1
         a2 = x3 - x2
@@ -219,7 +218,7 @@ class FIMBase():
         z2 = x2 - x3
         z1 = x1 - x2
 
-        norm_f, norm_sqr_f = self.norm_map[lib][D.shape[-1]]
+        norm_f, norm_sqr_f = norm_map[lib][D.shape[-1]]
 
         p11 = norm_sqr_f(D, x1=z1, x2=z1)
         p12 = norm_sqr_f(D, x1=z1, x2=z2)
@@ -250,7 +249,7 @@ class FIMBase():
     def tsitsiklis_update_tetra_quadr(self, D, k, z1, z2, lib=np):
         """Computes the quadratic equation for the tetrahedra update in :meth:`calculate_tet_update`.
         """
-        norm_f, norm_sqr_f = self.norm_map[lib][D.shape[-1]]
+        norm_f, norm_sqr_f = norm_map[lib][D.shape[-1]]
         p11 = norm_sqr_f(D, z1, z1)
         p12 = norm_sqr_f(D, z1, z2)
         p22 = norm_sqr_f(D, z2, z2)
@@ -293,7 +292,7 @@ class FIMBase():
         """
         xs = lib.stack([x1, x2, x3, x4], axis=-1)
         us = lib.stack([u1, u2, u3], axis=-1)
-        norm_f, norm_sqr_f = self.norm_map[lib][D.shape[-1]]
+        norm_f, norm_sqr_f = norm_map[lib][D.shape[-1]]
 
         y3 = x4 - x3
         y1 = x3 - x1

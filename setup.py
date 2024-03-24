@@ -49,7 +49,7 @@ with open(os.path.join(os.path.dirname(__file__), 'README.md'), 'r') as readme:
      long_description = readme.read()
 
 setup(name="fim-python",
-    version="1.2",    
+    version="1.2.1",    
     description="This repository implements the Fast Iterative Method on tetrahedral domains and triangulated surfaces purely in python both for CPU (numpy) and GPU (cupy).",
     long_description=long_description,
     long_description_content_type="text/markdown",

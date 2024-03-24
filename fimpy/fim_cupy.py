@@ -251,7 +251,6 @@ class FIMCupyAL(FIMBase):
 
     self.active_list = cp.array(self.active_list)
     self.mempool = cp.get_default_memory_pool()
-    self.norm = self.norm_map[cp][self.dims]
 
     if self.dims == 2:
       self.u3_comp_cupy = u3_comp_cupy_2D

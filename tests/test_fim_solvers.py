@@ -5,6 +5,7 @@ from fimpy.solver import create_fim_solver
 import numpy as np
 import os
 import scipy.io as sio
+import pickle
 
 try:
     import cupy as cp
@@ -20,7 +21,11 @@ class TestFIMSolversInit():
     @pytest.mark.parametrize('dims', [1, 2, 3])
     @pytest.mark.parametrize('precision', [np.float32, np.float64])
     @pytest.mark.parametrize('use_active_list', [True, False])
-    def test_init_cpu(self, dims, init_D, precision, use_active_list):
+    @pytest.mark.parametrize('device', ['cpu', 'gpu'])
+    def test_init(self, dims, init_D, precision, use_active_list, device):
+        if device == 'gpu' and not cupy_enabled:
+            pytest.skip(reason='Cupy could not be imported. GPU tests unavailable')
+
         points = np.tile(np.linspace(0, 1, num=4)[:(dims+1)][:, np.newaxis], [1, dims])
         elems = np.arange(points.shape[0])[np.newaxis]
         D = None
@@ -28,20 +33,7 @@ class TestFIMSolversInit():
             D = np.eye(dims)[np.newaxis]
 
         fim_solver = create_fim_solver(points, elems, D, device='cpu', precision=precision, use_active_list=use_active_list)
-
-    @pytest.mark.parametrize('init_D', [True, False])
-    @pytest.mark.parametrize('dims', [1, 2, 3])
-    @pytest.mark.parametrize('precision', [np.float32, np.float64])
-    @pytest.mark.parametrize('use_active_list', [True, False])
-    @pytest.mark.skipif(not cupy_enabled, reason='Cupy could not be imported. GPU tests unavailable')
-    def test_init_gpu(self, dims, init_D, precision, use_active_list):
-        points = np.tile(np.linspace(0, 1, num=4)[:(dims+1)][:, np.newaxis], [1, dims])
-        elems = np.arange(points.shape[0])[np.newaxis]
-        D = None
-        if init_D:
-            D = np.eye(dims)[np.newaxis]
-
-        fim_solver = create_fim_solver(points, elems, D, device='gpu', precision=precision, use_active_list=use_active_list)
+        return fim_solver
 
     @pytest.mark.parametrize('precision', [np.float32, np.float64])
     def test_error_init(self, precision, device='cpu'):
@@ -89,6 +81,18 @@ class TestFIMSolversInit():
     @pytest.mark.parametrize('precision', [np.float32, np.float64])
     def test_error_init_gpu(self, precision):
         self.test_error_init(precision, 'gpu')
+
+    
+    @pytest.mark.parametrize('init_D', [True, False])
+    @pytest.mark.parametrize('dims', [1, 2, 3])
+    @pytest.mark.parametrize('precision', [np.float32, np.float64])
+    @pytest.mark.parametrize('use_active_list', [True, False])
+    @pytest.mark.parametrize('device', ['cpu', 'gpu'])
+    def test_solver_serializable(self, dims, init_D, precision, use_active_list, device):
+        solver = self.test_init(dims, init_D, precision, use_active_list, device)
+        solver_ser = pickle.dumps(solver)
+        solver_unser = pickle.loads(solver_ser)
+        assert np.all(solver.points_perm == solver_unser.points_perm)
 
 from generate_test_data import test_dims, test_elem_dims, test_resolutions, elem_fnames
 

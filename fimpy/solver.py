@@ -59,3 +59,12 @@ def create_fim_solver(points : available_arr_t, elems : available_arr_t, metrics
         return (FIMNPAL(points, elems, metrics, precision) if use_active_list else FIMNP(points, elems, metrics, precision))
     elif device == 'gpu':
         return (FIMCupyAL(points, elems, metrics, precision) if use_active_list else FIMCupy(points, elems, metrics, precision))
+    else:
+        assert False,  f"Unknown device {device}, should be one of [cpu, gpu]"
+
+#Class for backwards compatibility
+from warnings import warn
+class FIMPY():
+    def create_fim_solver(*args, **kwargs):
+        warn("Using the FIMPY interface is deprecated and will be removed in future releases. Use the module function create_fim_solver directly.", DeprecationWarning, stacklevel=2)
+        return create_fim_solver(*args, **kwargs)
