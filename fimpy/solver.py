@@ -19,7 +19,7 @@ available_arr_t = (Union[np.ndarray, cp.ndarray] if cupy_available else np.ndarr
 """Function responsible for creating the correct Fast Iterative Method solver
 """
 def create_fim_solver(points : available_arr_t, elems : available_arr_t, metrics : available_arr_t =None, 
-                    precision=np.float32, device='gpu', use_active_list=True) -> FIMBase:
+                    precision=np.float32, device='cpu', use_active_list=True) -> FIMBase:
     """Creates a Fast Iterative Method solver for solving the anisotropic eikonal equation
 
     .. math::
@@ -52,8 +52,7 @@ def create_fim_solver(points : available_arr_t, elems : available_arr_t, metrics
     FIMBase
         Returns a Fast Iterative Method solver
     """
-    if not cupy_available:
-        device='cpu'
+    assert not device == 'gpu' or cupy_available, "Requested GPU which is not available"
 
     if device == 'cpu':
         return (FIMNPAL(points, elems, metrics, precision) if use_active_list else FIMNP(points, elems, metrics, precision))

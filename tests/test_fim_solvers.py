@@ -2,6 +2,7 @@
 import pytest
 #from .
 from fimpy.solver import create_fim_solver
+from fimpy.solver import FIMPY #Deprecated interface
 import numpy as np
 import os
 import scipy.io as sio
@@ -26,14 +27,18 @@ class TestFIMSolversInit():
         if device == 'gpu' and not cupy_enabled:
             pytest.skip(reason='Cupy could not be imported. GPU tests unavailable')
 
-        points = np.tile(np.linspace(0, 1, num=4)[:(dims+1)][:, np.newaxis], [1, dims])
-        elems = np.arange(points.shape[0])[np.newaxis]
+        points, elems = self.dummy_mesh(dims)
         D = None
         if init_D:
             D = np.eye(dims)[np.newaxis]
 
-        fim_solver = create_fim_solver(points, elems, D, device='cpu', precision=precision, use_active_list=use_active_list)
+        fim_solver = create_fim_solver(points, elems, D, device=device, precision=precision, use_active_list=use_active_list)
         return fim_solver
+
+    def dummy_mesh(self, dims):
+        points = np.tile(np.linspace(0, 1, num=4)[:(dims+1)][:, np.newaxis], [1, dims])
+        elems = np.arange(points.shape[0])[np.newaxis]
+        return points, elems
 
     @pytest.mark.parametrize('precision', [np.float32, np.float64])
     def test_error_init(self, precision, device='cpu'):
@@ -82,7 +87,15 @@ class TestFIMSolversInit():
     def test_error_init_gpu(self, precision):
         self.test_error_init(precision, 'gpu')
 
-    
+    def test_error_init_wrong_device(self):
+        with pytest.raises(AssertionError):
+            self.test_init(3, True, np.float32, use_active_list=False, device='undefined_device')
+
+    def test_error_deprecated(self):
+        solver2 = FIMPY.create_fim_solver(*self.dummy_mesh(2))
+        solver = create_fim_solver(*self.dummy_mesh(2))
+        assert pickle.dumps(solver) == pickle.dumps(solver2) #Serialized objects should be exactly the same
+
     @pytest.mark.parametrize('init_D', [True, False])
     @pytest.mark.parametrize('dims', [1, 2, 3])
     @pytest.mark.parametrize('precision', [np.float32, np.float64])
