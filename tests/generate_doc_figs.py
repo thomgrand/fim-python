@@ -5,7 +5,7 @@ import numpy as np
 import cupy as cp
 import sys
 sys.path.append(".")
-from fimpy import FIMPY
+from fimpy import create_fim_solver
 from scipy.spatial import Delaunay
 import matplotlib.pyplot as plt
 import matplotlib.colors
@@ -32,7 +32,7 @@ def generate_usage_example(save_fig=True):
     x0_vals = np.array([0.])
 
     #Create a FIM solver, by default the GPU solver will be called with the active list
-    fim = FIMPY.create_fim_solver(points, elems, D)
+    fim = create_fim_solver(points, elems, D)
     phi = fim.comp_fim(x0, x0_vals)
 
     #Plot the data of all points to the given x0 at the center of the domain

@@ -37,14 +37,14 @@ pip install fim-python #CPU version
 
 # Usage
 
-The main interface to create a solver object to use is [`FIMPY.create_fim_solver`](https://fim-python.readthedocs.io/en/latest/interface.html#fimpy.solver.FIMPY.create_fim_solver)
+The main interface to create a solver object to use is [`create_fim_solver`](https://fim-python.readthedocs.io/en/latest/interface.html#fimpy.solver.create_fim_solver)
 
 ```python
-from fimpy.solver import FIMPY
+from fimpy.solver import create_fim_solver
 
 #Create a FIM solver, by default the GPU solver will be called with the active list
 #Set device='cpu' to run on cpu and use_active_list=False to use Jacobi method
-fim = FIMPY.create_fim_solver(points, elems, D)
+fim = create_fim_solver(points, elems, D)
 ```
 
 Example
@@ -55,7 +55,7 @@ The following code reproduces the [above example](#details)
 ```python
 import numpy as np
 import cupy as cp
-from fimpy.solver import FIMPY
+from fimpy.solver import create_fim_solver
 from scipy.spatial import Delaunay
 import matplotlib.pyplot as plt
 
@@ -76,7 +76,7 @@ x0 = np.array([np.argmin(np.linalg.norm(points, axis=-1), axis=0)])
 x0_vals = np.array([0.])
 
 #Create a FIM solver, by default the GPU solver will be called with the active list
-fim = FIMPY.create_fim_solver(points, elems, D)
+fim = create_fim_solver(points, elems, D)
 phi = fim.comp_fim(x0, x0_vals)
 
 #Plot the data of all points to the given x0 at the center of the domain
@@ -99,7 +99,7 @@ On the CPU, `use_active_list=True` outperforms the Jacobi approach for almost al
 
 # Citation
 
-If you find this work useful in your research, please consider citing the paper in the [Journal of Open Source Software](https://joss.theoj.org/)
+If you find this work useful in your research, please consider citing the [paper](https://doi.org/10.21105/joss.03641) in the [Journal of Open Source Software](https://joss.theoj.org/)
 ```bibtex
 @article{grandits_fast_2021,
   doi = {10.21105/joss.03641},

@@ -101,4 +101,4 @@ extern "C"{
         }
       }
   }
-}''') #: CUDA kernel to compute a mask of all element permutations containing at least one active index. New, more inefficient version using shared memory.
+}''') #: CUDA kernel to compute a mask of all element permutations containing at least one active index. New, more efficient version using shared memory.

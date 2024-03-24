@@ -15,8 +15,7 @@ def _broadcast_metric_params(A, x1, x2):
   See :func:`metric_sqr_norm_matrix`.
   """
   if A.ndim == 4: #Broadcasting
-    #To remove the read-only problem, copy back
-    A = np.broadcast_to(A, [A.shape[0], max(A.shape[1], x1.shape[1]), x1.shape[-1], x1.shape[-1]]).copy()
+    A = np.broadcast_to(A, [A.shape[0], max(A.shape[1], x1.shape[1]), x1.shape[-1], x1.shape[-1]])
     x1 = np.broadcast_to(x1, A.shape[:-1])
     x2 = np.broadcast_to(x2, A.shape[:-1])
 

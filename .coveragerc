@@ -22,10 +22,6 @@ exclude_lines =
     if 0:
     if __name__ == .__main__.:
 
-    #Ignore numba njit code
-    \@njit
-    \@vectorize
-
 ignore_errors = True
 
 [html]

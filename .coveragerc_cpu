@@ -24,10 +24,6 @@ exclude_lines =
     if cupy_enabled:
     if not cupy_available:
 
-    #Ignore numba njit code
-    \@njit
-    \@vectorize
-
 ignore_errors = True
 
 [html]

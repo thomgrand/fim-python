@@ -1,10 +1,12 @@
 #import unittest
 import pytest
 #from .
-from fimpy.solver import FIMPY
+from fimpy.solver import create_fim_solver
+from fimpy.solver import FIMPY #Deprecated interface
 import numpy as np
 import os
 import scipy.io as sio
+import pickle
 
 try:
     import cupy as cp
@@ -20,28 +22,23 @@ class TestFIMSolversInit():
     @pytest.mark.parametrize('dims', [1, 2, 3])
     @pytest.mark.parametrize('precision', [np.float32, np.float64])
     @pytest.mark.parametrize('use_active_list', [True, False])
-    def test_init_cpu(self, dims, init_D, precision, use_active_list):
-        points = np.tile(np.linspace(0, 1, num=4)[:(dims+1)][:, np.newaxis], [1, dims])
-        elems = np.arange(points.shape[0])[np.newaxis]
+    @pytest.mark.parametrize('device', ['cpu', 'gpu'])
+    def test_init(self, dims, init_D, precision, use_active_list, device):
+        if device == 'gpu' and not cupy_enabled:
+            pytest.skip(reason='Cupy could not be imported. GPU tests unavailable')
+
+        points, elems = self.dummy_mesh(dims)
         D = None
         if init_D:
             D = np.eye(dims)[np.newaxis]
 
-        fim_solver = FIMPY.create_fim_solver(points, elems, D, device='cpu', precision=precision, use_active_list=use_active_list)
+        fim_solver = create_fim_solver(points, elems, D, device=device, precision=precision, use_active_list=use_active_list)
+        return fim_solver
 
-    @pytest.mark.parametrize('init_D', [True, False])
-    @pytest.mark.parametrize('dims', [1, 2, 3])
-    @pytest.mark.parametrize('precision', [np.float32, np.float64])
-    @pytest.mark.parametrize('use_active_list', [True, False])
-    @pytest.mark.skipif(not cupy_enabled, reason='Cupy could not be imported. GPU tests unavailable')
-    def test_init_gpu(self, dims, init_D, precision, use_active_list):
+    def dummy_mesh(self, dims):
         points = np.tile(np.linspace(0, 1, num=4)[:(dims+1)][:, np.newaxis], [1, dims])
         elems = np.arange(points.shape[0])[np.newaxis]
-        D = None
-        if init_D:
-            D = np.eye(dims)[np.newaxis]
-
-        fim_solver = FIMPY.create_fim_solver(points, elems, D, device='gpu', precision=precision, use_active_list=use_active_list)
+        return points, elems
 
     @pytest.mark.parametrize('precision', [np.float32, np.float64])
     def test_error_init(self, precision, device='cpu'):
@@ -50,45 +47,65 @@ class TestFIMSolversInit():
 
         #Wrong dimensions
         with pytest.raises(Exception):
-            FIMPY.create_fim_solver(points, elems)
+            create_fim_solver(points, elems)
 
         #Points not numeric
         points = np.array([[0, 0], [1, 0]]).astype(np.int32)
         elems = np.array([[0, 1]])
         with pytest.raises(Exception):
-            FIMPY.create_fim_solver(points, elems)
+            create_fim_solver(points, elems)
 
         #D and elems not matching
         points = np.array([[0., 0], [1, 0]])
         elems = np.array([[0, 1]])
         D = np.tile(np.eye(2)[np.newaxis], [2, 1])
         with pytest.raises(Exception):
-            FIMPY.create_fim_solver(points, elems, D)
+            create_fim_solver(points, elems, D)
 
         #elems references non-existant points
         points = np.array([[0., 0.], [1., 0.]])
         elems = np.array([[0, 1, 2]])
         with pytest.raises(Exception):
-            FIMPY.create_fim_solver(points, elems, precision=precision, device=device)
+            create_fim_solver(points, elems, precision=precision, device=device)
 
         
         #points not contained in any element
         points = np.array([[0., 0.], [1., 0.], [0., 1.]])
         elems = np.array([[0, 1]])
         with pytest.raises(Exception):
-            FIMPY.create_fim_solver(points, elems, precision=precision, device=device)
+            create_fim_solver(points, elems, precision=precision, device=device)
 
         #Unsupported element dimensions (Polygons and other elements)
         points = np.array([[0., 0.], [1., 0.], [0., 1.], [1., 1.], [-1., 0.]])
         elems = np.array([[0, 1, 2, 3, 4]])
         with pytest.raises(Exception):
-            FIMPY.create_fim_solver(points, elems, precision=precision, device=device)
+            create_fim_solver(points, elems, precision=precision, device=device)
         
 
     @pytest.mark.skipif(not cupy_enabled, reason='Cupy could not be imported. GPU tests unavailable')
     @pytest.mark.parametrize('precision', [np.float32, np.float64])
     def test_error_init_gpu(self, precision):
         self.test_error_init(precision, 'gpu')
+
+    def test_error_init_wrong_device(self):
+        with pytest.raises(AssertionError):
+            self.test_init(3, True, np.float32, use_active_list=False, device='undefined_device')
+
+    def test_error_deprecated(self):
+        solver2 = FIMPY.create_fim_solver(*self.dummy_mesh(2))
+        solver = create_fim_solver(*self.dummy_mesh(2))
+        assert pickle.dumps(solver) == pickle.dumps(solver2) #Serialized objects should be exactly the same
+
+    @pytest.mark.parametrize('init_D', [True, False])
+    @pytest.mark.parametrize('dims', [1, 2, 3])
+    @pytest.mark.parametrize('precision', [np.float32, np.float64])
+    @pytest.mark.parametrize('use_active_list', [True, False])
+    @pytest.mark.parametrize('device', ['cpu', 'gpu'])
+    def test_solver_serializable(self, dims, init_D, precision, use_active_list, device):
+        solver = self.test_init(dims, init_D, precision, use_active_list, device)
+        solver_ser = pickle.dumps(solver)
+        solver_unser = pickle.loads(solver_ser)
+        assert np.all(solver.points_perm == solver_unser.points_perm)
 
 from generate_test_data import test_dims, test_elem_dims, test_resolutions, elem_fnames
 
@@ -116,7 +133,7 @@ class TestFIMSolversComputations():
             nr_points = points.shape[0]
 
             #D specified at initialization
-            solver = FIMPY.create_fim_solver(points, elems, D, precision=precision, device=device, use_active_list=use_active_list)
+            solver = create_fim_solver(points, elems, D, precision=precision, device=device, use_active_list=use_active_list)
             x0 = np.array([np.random.choice(nr_points)])
             x0_vals = np.array([0.])
             phi1 = solver.comp_fim(x0, x0_vals)
@@ -126,7 +143,7 @@ class TestFIMSolversComputations():
             assert(np.all(~np.isnan(phi1)))
 
             #D specified at computation
-            solver = FIMPY.create_fim_solver(points, elems, precision=precision, device=device, use_active_list=use_active_list)
+            solver = create_fim_solver(points, elems, precision=precision, device=device, use_active_list=use_active_list)
             #Fails without specifying D
             with pytest.raises(Exception):
                 solver.comp_fim(x0, x0_vals)

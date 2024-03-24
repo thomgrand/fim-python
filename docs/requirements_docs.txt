@@ -1,5 +1,4 @@
 numpy
-numba
 cython
 sphinx
 pydata_sphinx_theme

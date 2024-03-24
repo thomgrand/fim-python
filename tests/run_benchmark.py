@@ -5,7 +5,7 @@ import cupy as cp
 #from cupy.cuda.memory import OutOfMemoryError
 from cupy.cuda.runtime import CUDARuntimeError
 import scipy.io as sio
-from fimpy.solver import FIMPY
+from fimpy.solver import create_fim_solver
 import time
 import timeit
 from IPython import get_ipython
@@ -32,7 +32,7 @@ def run_single_test(device, use_active_list, dims, elem_dims, resolution, bench_
 
     #Setup the solver
     bt = time.time()
-    solver = FIMPY.create_fim_solver(points, elems, D, precision=np.float32, device=device, use_active_list=use_active_list)
+    solver = create_fim_solver(points, elems, D, precision=np.float32, device=device, use_active_list=use_active_list)
     at = time.time()
     setup_time = at - bt
 
